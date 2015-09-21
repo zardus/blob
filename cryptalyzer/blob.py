@@ -4,13 +4,35 @@ import operator
 import itertools
 
 class Blob(object):
-    def __init__(self, dirname=None, filename=None, data=None):
+    def __init__(self, dirname=None, filename=None, data=None, bitdata=None):
         self.filename = filename
-        self.data = data if data is not None else open(os.path.join(dirname, filename), 'r')
+
+        if data is not None:
+            self.data = data
+        elif bitdata is not None:
+            self.data = utils.from_bitstr(bitdata)
+        elif filename is not None:
+            self.data = open(os.path.join(dirname, filename), 'r')
         self.blocksize_bits = None
 
     def __eq__(self, o):
         return self.data == o.data
+
+    #
+    # operations
+    #
+
+    def __xor__(self, o):
+        return Blob(data=utils.xor_str(self.data, o.data))
+
+    def __and__(self, o):
+        return Blob(data=utils.and_str(self.data, o.data))
+
+    def __or__(self, o):
+        return Blob(data=utils.or_str(self.data, o.data))
+
+    def __invert__(self):
+        return Blob(data=utils.not_str(self.data))
 
     #
     # Size

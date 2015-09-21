@@ -49,6 +49,18 @@ def test_str():
 	assert cryptalyzer.utils.xor_str('\x01\x01\x01\x01', '\x10\x10\x10\x10') == '\x11\x11\x11\x11'
 	assert cryptalyzer.utils.xor_str('\x11', '\xff\xfe\x10\x11') == '\xee\xef\x01\x00'
 
+	assert cryptalyzer.utils.and_str(cryptalyzer.utils.xor_str(' ','\xff'), 'secret') == 'SECRET'
+	assert cryptalyzer.utils.and_str('\x01\x01\x01\x01', '\x10\x10\x10\x10') == '\x00\x00\x00\x00'
+	assert cryptalyzer.utils.and_str('\x11', '\xff\xfe\x10\x11') == '\x11\x10\x10\x11'
+
+	assert cryptalyzer.utils.or_str(' ', 'SECRET') == 'secret'
+	assert cryptalyzer.utils.or_str('\x01\x01\x01\x01', '\x10\x10\x10\x10') == '\x11\x11\x11\x11'
+	assert cryptalyzer.utils.or_str('\x11', '\xff\xfe\x10\x11') == '\xff\xff\x11\x11'
+
+	assert cryptalyzer.utils.not_str('SECRET') == cryptalyzer.utils.xor_str('SECRET', '\xff')
+	assert cryptalyzer.utils.not_str('\x01\x01\x01\x01') == '\xfe\xfe\xfe\xfe'
+	assert cryptalyzer.utils.not_str('\xff\xfe\x10\x11') == '\x00\x01\xef\xee'
+
 def run_all():
 	for n,f in globals().iteritems():
 		if n.startswith('test'):

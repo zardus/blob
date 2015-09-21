@@ -5,6 +5,10 @@ def test_size():
     assert b.size_bytes == 16
     assert b.size_bits == 16*8
 
+    b = cryptalyzer.Blob(bitdata=cryptalyzer.utils.to_bitstr("AAAABBBBCCCCDDDD"))
+    assert b.size_bytes == 16
+    assert b.size_bits == 16*8
+
 def test_blocks():
     b = cryptalyzer.Blob(data="AAAABBBBCCCC")
 
@@ -28,6 +32,22 @@ def test_unpack():
     assert b.unpack_struct('H') == [ 0x4141, 0x4242, 0x4242, 0x4343 ]
     assert b.unpack_struct('<I') == [ 0x42424141, 0x43434242 ]
     assert b.unpack_struct('c') == list("AABBBBCC")
+
+    b = cryptalyzer.Blob(bitdata=cryptalyzer.utils.to_bitstr("AABBBBCC"))
+    assert b.unpack_struct('>I') == [ 0x41414242, 0x42424343 ]
+    assert b.unpack_struct('H') == [ 0x4141, 0x4242, 0x4242, 0x4343 ]
+    assert b.unpack_struct('<I') == [ 0x42424141, 0x43434242 ]
+    assert b.unpack_struct('c') == list("AABBBBCC")
+
+def test_bitops():
+    a = cryptalyzer.Blob(data='ABCD')
+    b = cryptalyzer.Blob(data='    ')
+    c = cryptalyzer.Blob(data='\x21\xff\xee\x11')
+
+    assert (a ^ b).data == 'abcd'
+    assert (a | b).data == 'abcd'
+    assert (a & b).data == '\x00\x00\x00\x00'
+    assert (~c).data == '\xde\x00\x11\xee'
 
 def run_all():
     for n,f in globals().iteritems():

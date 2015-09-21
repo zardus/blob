@@ -15,13 +15,15 @@ Each blob should be able to:
 * split the blob by a byte separator
 * split the blob by a bit separator
 * produce arrays of integers
+* xor/or/and blobs together
+* bitwise not on blobs
+- in-place blob operations
 - produce arrays of bitstrings
 - run entropy and randomness tests
 - run sliding-window entropy and randomness tests
 - do a distribution of various n-grams
 - swap endness
 - append/interleave blobs
-- xor blobs together
 - get printable strings
 - get dictionary words
 - apply error-correction like reed-solomon

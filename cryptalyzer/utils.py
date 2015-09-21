@@ -1,5 +1,6 @@
 from .pyecm import pyecm
 import itertools
+import operator
 import array
 
 def factor(n):
@@ -35,7 +36,7 @@ def xor_bitstr(a, b, cycle=True):
 # byte stuff
 #
 
-def xor_str(a, b, cycle=True):
+def _op_str(op, a, b, cycle):
     if len(a) < len(b): b,a = a,b
     if len(a) != len(b) and not cycle: raise XORError('unequal sizes (maybe add cycle=True?)')
 
@@ -45,7 +46,19 @@ def xor_str(a, b, cycle=True):
     bci = iter(bc)
 
     for i in range(len(a)):
-        aa[i] ^= next(bci)
+        aa[i] = op(aa[i], next(bci))
     return aa.tostring()
+
+def xor_str(a, b, cycle=True):
+    return _op_str(operator.xor, a, b, cycle)
+
+def and_str(a, b, cycle=True):
+    return _op_str(operator.and_, a, b, cycle)
+
+def or_str(a, b, cycle=True):
+    return _op_str(operator.or_, a, b, cycle)
+
+def not_str(a):
+    return _op_str(operator.xor, a, '\xff', True)
 
 from .errors import XORError
