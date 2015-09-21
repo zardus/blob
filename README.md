@@ -10,12 +10,15 @@ Each blob should be able to:
 
 * load some data as a blob
 * reason about "block size" (i.e., even divisions of the blob)
+* split the blob by blocksize
+* split the blob into n chunks
+* split the blob by a byte separator
+- split the blob by a bit separator
 - produce arrays of integers, bits, etc
 - run entropy and randomness tests
 - run sliding-window entropy and randomness tests
 - do a distribution of various n-grams
 - swap endness
-- split the blob
 - append/interleave blobs
 - xor blobs together
 - get printable strings

@@ -8,6 +8,9 @@ class Blob(object):
         self.data = data if data is not None else open(os.path.join(dirname, filename), 'r')
         self.blocksize_bits = None
 
+    def __eq__(self, o):
+        return self.data == o.data
+
     #
     # Size
     #
@@ -26,7 +29,7 @@ class Blob(object):
         return self.size_bits / self.blocksize_bits
 
     #
-    # Block size
+    # Blocks
     #
 
     @property
@@ -59,6 +62,25 @@ class Blob(object):
         min_blocksize = 8 if min_blocksize is None else min_blocksize * 8
         bit_candidates = self.blocksize_bits_candidates(min_blocks=min_blocks, min_blocksize=min_blocksize)
         return [ f/8 for f in bit_candidates if f%8 == 0]
+
+    def split(self, bytesize=None, bitsize=None, n=None, bytesep=None):
+        if bytesize is None and bitsize is None and n is None:
+            split_bits_size = self.blocksize_bits
+        elif n is not None:
+            split_bits_size = self.size_bits/n
+        elif bytesize is not None:
+            split_bits_size = bytesize * 8
+        elif bitsize is not None:
+            split_bits_size = bitsize
+
+        if bytesep is not None:
+            newblocks = [ Blob(data=d) for d in self.data.split(bytesep) ]
+        elif split_bits_size % 8 != 0:
+            raise BlobError("TODO: support non-byte blocksizes")
+        else:
+            newblocks = [ Blob(data=self.data[i:i+split_bits_size/8]) for i in range(0, self.size_bytes, split_bits_size/8) ]
+
+        return newblocks
 
 from . import utils
 from .errors import BlobError
