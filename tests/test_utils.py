@@ -41,6 +41,13 @@ def test_bitstr():
 	assert cryptalyzer.utils.xor_bitstr(d_bs, c_bs) == e_bs
 	assert cryptalyzer.utils.xor_bitstr(d_bs, e_bs) == c_bs
 	assert cryptalyzer.utils.xor_bitstr(c_bs, e_bs) == d_bs
+	assert cryptalyzer.utils.xor_bitstr('1110001100', '1') == '0001110011'
+
+def test_str():
+	assert cryptalyzer.utils.xor_str(' ', 'secret') == 'SECRET'
+	assert cryptalyzer.utils.xor_str('secret', ' ') == 'SECRET'
+	assert cryptalyzer.utils.xor_str('\x01\x01\x01\x01', '\x10\x10\x10\x10') == '\x11\x11\x11\x11'
+	assert cryptalyzer.utils.xor_str('\x11', '\xff\xfe\x10\x11') == '\xee\xef\x01\x00'
 
 def run_all():
 	for n,f in globals().iteritems():

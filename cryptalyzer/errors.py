@@ -1,5 +1,8 @@
 class CryptalyzerError(Exception):
     pass
 
-class BlobError(Exception):
+class XORError(CryptalyzerError):
+    pass
+
+class BlobError(CryptalyzerError):
     pass
