@@ -1,0 +1,49 @@
+2.0.2
+   - Now supports gmpy2, as well as gmpy.
+
+2.0.1
+   - Fixed minor bug with factoring negative numbers on the command-line.
+
+2.0
+   - Made asymptotic improvements at the expense of a constant factor. It
+should now be faster for numbers greater than 30 or so digits but slower
+for numbers less than that.
+   - Added ability to type expressions instead of plain numbers. For example,
+the program will now factor "2^30-1" instead of making you type "1073741823".
+   - Added capability to run pyecm in parallel.
+   - Added command line switches, such as a verbose mode and an ability to
+select sigma (an internal parameter) randomly.
+   - Improved compatibility with installations lacking gmpy and/or psyco.
+
+1.2.2:
+   - Made pyecm a tiny bit faster
+   - Fixed the bug where the version is reported incorrectly as 1.2
+   - Included the GPL with the source
+
+1.2.1:
+   - Fixed a silly typo in fastprime. This should make it a little bit faster.
+   - Removed silly spaces after lines
+
+1.2:
+   - pyecm now uses gmpy if it's installed on your system (highly recommended:
+HUGE speed increase when used). If it's not installed, it continues as normal.
+
+1.1.2:
+   - Silly bug with not using psyco fixed
+
+1.1.1:
+   - Minor bug fixes
+   - Minor speed improvement
+
+1.1:
+   - More speed improvements
+
+1.0:
+   - Massive speed improvements
+
+0.2:
+   - Many bugfixes
+   - Speed improvements
+
+0.1:
+   - Initial release
