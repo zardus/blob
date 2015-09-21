@@ -13,8 +13,9 @@ Each blob should be able to:
 * split the blob by blocksize
 * split the blob into n chunks
 * split the blob by a byte separator
-- split the blob by a bit separator
-- produce arrays of integers, bits, etc
+* split the blob by a bit separator
+* produce arrays of integers
+- produce arrays of bitstrings
 - run entropy and randomness tests
 - run sliding-window entropy and randomness tests
 - do a distribution of various n-grams

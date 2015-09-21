@@ -20,6 +20,14 @@ def test_split():
     assert b.split(bytesize=3) == [ cryptalyzer.Blob(data=i) for i in ('AAA', 'ABB', 'BBC', 'CCC') ]
     assert b.split(bitsize=16) == [ cryptalyzer.Blob(data=i) for i in ('AA', 'AA', 'BB', 'BB', 'CC', 'CC') ]
     assert b.split(bytesep='B') == [ cryptalyzer.Blob(data=i) for i in ('AAAA', 'CCCC') ]
+    assert b.split(bytesep='B', allow_empty=True) == [ cryptalyzer.Blob(data=i) for i in ('AAAA', '','','', 'CCCC') ]
+
+def test_unpack():
+    b = cryptalyzer.Blob(data="AABBBBCC")
+    assert b.unpack_struct('>I') == [ 0x41414242, 0x42424343 ]
+    assert b.unpack_struct('H') == [ 0x4141, 0x4242, 0x4242, 0x4343 ]
+    assert b.unpack_struct('<I') == [ 0x42424141, 0x43434242 ]
+    assert b.unpack_struct('c') == list("AABBBBCC")
 
 def run_all():
     for n,f in globals().iteritems():

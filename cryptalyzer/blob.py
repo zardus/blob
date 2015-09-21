@@ -1,4 +1,5 @@
 import os
+import struct
 import operator
 import itertools
 
@@ -63,7 +64,7 @@ class Blob(object):
         bit_candidates = self.blocksize_bits_candidates(min_blocks=min_blocks, min_blocksize=min_blocksize)
         return [ f/8 for f in bit_candidates if f%8 == 0]
 
-    def split(self, bytesize=None, bitsize=None, n=None, bytesep=None):
+    def split(self, bytesize=None, bitsize=None, n=None, bytesep=None, allow_empty=False):
         if bytesize is None and bitsize is None and n is None:
             split_bits_size = self.blocksize_bits
         elif n is not None:
@@ -74,13 +75,32 @@ class Blob(object):
             split_bits_size = bitsize
 
         if bytesep is not None:
-            newblocks = [ Blob(data=d) for d in self.data.split(bytesep) ]
+            newblocks = [ Blob(data=d) for d in self.data.split(bytesep) if allow_empty or d != '' ]
         elif split_bits_size % 8 != 0:
             raise BlobError("TODO: support non-byte blocksizes")
         else:
             newblocks = [ Blob(data=self.data[i:i+split_bits_size/8]) for i in range(0, self.size_bytes, split_bits_size/8) ]
 
         return newblocks
+
+    #
+    # data converters
+    #
+
+    def unpack_struct(self, fmt, repeat=True, s=None):
+        s = struct.Struct(fmt) if s is None else s
+        if self.size_bytes % s.size != 0:
+            raise BlobError("format size does not evenly divide blob size")
+
+        if not repeat:
+            if s.size != self.size_bytes:
+                raise BlobError("size of non-repeating format is not equal to the blob size")
+            return s.unpack(self.data)
+        else:
+            o = [ ]
+            for b in self.split(bytesize=s.size):
+                o.extend(b.unpack_struct(fmt, repeat=False, s=s))
+            return o
 
 from . import utils
 from .errors import BlobError
