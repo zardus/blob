@@ -17,11 +17,14 @@ Each blob should be able to:
 * produce arrays of integers
 * xor/or/and blobs together
 * bitwise not on blobs
+* calculate entropy
+* calculate chi-square
+- analyze randomness of data
 - in-place blob operations
 - produce arrays of bitstrings
-- run entropy and randomness tests
 - run sliding-window entropy and randomness tests
 - do a distribution of various n-grams
+- find repeating patterns
 - swap endness
 - append/interleave blobs
 - get printable strings

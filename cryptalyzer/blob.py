@@ -2,6 +2,8 @@ import os
 import struct
 import operator
 import itertools
+import scipy.stats
+import collections
 
 class Blob(object):
     def __init__(self, dirname=None, filename=None, data=None, bitdata=None):
@@ -15,12 +17,18 @@ class Blob(object):
             self.data = open(os.path.join(dirname, filename), 'r')
         self.blocksize_bits = None
 
-    def __eq__(self, o):
-        return self.data == o.data
-
     #
     # operations
     #
+
+    def __repr__(self):
+        return "<Blob bits=%d>" % self.size_bits
+
+    def __eq__(self, o):
+        return self.data == o.data
+
+    def __hash__(self):
+        return hash(self.data)
 
     def __xor__(self, o):
         return Blob(data=utils.xor_str(self.data, o.data))
@@ -123,6 +131,22 @@ class Blob(object):
             for b in self.split(bytesize=s.size):
                 o.extend(b.unpack_struct(fmt, repeat=False, s=s))
             return o
+
+    #
+    # Statistical stuff
+    #
+
+    def entropy(self, blocksize_bytes=None, blocksize_bits=None, base=2, **kwargs):
+        elements = self.split(bytesize=blocksize_bytes, bitsize=blocksize_bits)
+        counts = collections.Counter(elements)
+
+        return float(scipy.stats.entropy(counts.values(), base=base, **kwargs))
+
+    def chisquare(self, blocksize_bytes=None, blocksize_bits=None, **kwargs):
+        elements = self.split(bytesize=blocksize_bytes, bitsize=blocksize_bits)
+        counts = collections.Counter(elements)
+
+        return map(float, scipy.stats.chisquare(counts.values(), **kwargs))
 
 from . import utils
 from .errors import BlobError

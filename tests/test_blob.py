@@ -1,4 +1,5 @@
 import cryptalyzer
+import random
 
 def test_size():
     b = cryptalyzer.Blob(data="AAAABBBBCCCCDDDD")
@@ -48,6 +49,52 @@ def test_bitops():
     assert (a | b).data == 'abcd'
     assert (a & b).data == '\x00\x00\x00\x00'
     assert (~c).data == '\xde\x00\x11\xee'
+
+    a |= b
+    assert a.data == 'abcd'
+    a ^= b
+    assert a.data == 'ABCD'
+    a &= b
+    assert a.data == '\x00\x00\x00\x00'
+
+def test_entropy():
+    a = cryptalyzer.Blob(data="AABBBBCC")
+    b = cryptalyzer.Blob(data="AAAABBBBCCCC")
+    c = cryptalyzer.Blob(data="ABABABABABABABABABABABABABABAB")
+    d = cryptalyzer.Blob(data="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    e = cryptalyzer.Blob(data=''.join(chr(i) for i in range(256)))
+
+    assert a.entropy(blocksize_bytes=1) == 1.5
+    assert b.entropy(blocksize_bytes=1) == 1.584962500721156
+    assert c.entropy(blocksize_bytes=1) == 1
+    assert c.entropy(blocksize_bytes=3) == 1
+    assert c.entropy(blocksize_bytes=2) == 0
+    assert d.entropy(blocksize_bytes=1) == 0
+    assert d.entropy(blocksize_bytes=3) == 0
+    assert round(e.entropy(blocksize_bytes=1), 5) == 8.0
+
+def test_chisquare():
+    random_data = ''.join(chr(random.randrange(0, 256)) for _ in range(512*1024))
+
+    r = cryptalyzer.Blob(data=random_data)
+    br = cryptalyzer.Blob(data=cryptalyzer.utils.to_bitstr(random_data))
+    lr = cryptalyzer.Blob(data=random_data+'A'*1024)
+    nr = cryptalyzer.Blob(data='A'*1024+'BBBBB')
+
+    c_r = r.chisquare(blocksize_bytes=1)
+    c_br = br.chisquare(blocksize_bytes=1)
+    c_lr = lr.chisquare(blocksize_bytes=1)
+    c_nr = nr.chisquare(blocksize_bytes=1)
+
+    assert c_br[0] < 2.0
+    assert c_br[0] < c_r[0]
+    assert c_br[0] < c_lr[0]
+    assert c_r[0] < c_lr[0]
+    assert c_lr[0] < c_nr[0]
+
+    assert c_br[1] > c_r[1]
+    assert c_r[1] > c_lr[1]
+    assert c_lr[1] > c_nr[1]
 
 def run_all():
     for n,f in globals().iteritems():
