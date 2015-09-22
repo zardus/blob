@@ -19,16 +19,19 @@ class Blob(object):
             self.data = open(os.path.join(dirname, filename), 'r')
         self.blocksize_bits = None
 
+        if self._data_bits is not None and len(self._data_bits) % 8 != 0:
+            raise BlobError("TODO: support non-byte blocksizes")
+
+
     #
     # Bit access
     #
 
     @property
     def data(self):
-        if self._data_bytes is not None:
-            return self._data_bytes
-        else:
-            return utils.from_bitstr(self._data_bits)
+        if self._data_bytes is None:
+            self._data_bytes = utils.from_bitstr(self._data_bits)
+        return self._data_bytes
 
     @data.setter
     def data(self, d):
@@ -37,10 +40,9 @@ class Blob(object):
 
     @property
     def data_bits(self):
-        if self._data_bytes is not None:
-            return utils.to_bitstr(self._data_bytes)
-        else:
-            return self._data_bits
+        if self._data_bits is None:
+            self._data_bits = utils.to_bitstr(self._data_bytes)
+        return self._data_bits
 
     @data_bits.setter
     def data_bits(self, d):
@@ -128,38 +130,41 @@ class Blob(object):
         return [ f/8 for f in bit_candidates if f%8 == 0]
 
     def split(self, bytesize=None, bitsize=None, n=None, bytesep=None, allow_empty=False):
-        if bytesize is None and bitsize is None and n is None:
-            split_bits_size = self.blocksize_bits
-        elif n is not None:
-            split_bits_size = self.size_bits/n
-        elif bytesize is not None:
-            split_bits_size = bytesize * 8
-        elif bitsize is not None:
-            split_bits_size = bitsize
-
         if bytesep is not None:
             newblocks = [ Blob(data=d) for d in self.data.split(bytesep) if allow_empty or d != '' ]
-        elif split_bits_size % 8 != 0:
-            raise BlobError("TODO: support non-byte blocksizes")
         else:
+            if n is not None:
+                split_bits_size = self.size_bits/n
+            else:
+                split_bits_size = self._get_bit_index(byte=bytesize, bit=bitsize)
+
+            if split_bits_size % 8 != 0:
+                raise BlobError("TODO: support non-byte blocksizes for splitting")
+
             newblocks = [ Blob(data=self.data[i:i+split_bits_size/8]) for i in range(0, self.size_bytes, split_bits_size/8) ]
 
         return newblocks
 
-    def offset(self, byteoffset=None, bitoffset=None, bytesep=None):
-        if bitoffset is not None:
-            pass
-        elif byteoffset is not None:
-            bitoffset = byteoffset * 8
+    def _get_bit_index(self, byte=None, bit=None, bitsep=None, bytesep=None):
+        if bit is not None:
+            return bit
+        elif byte is not None:
+            return byte * 8
         elif bytesep is not None:
             if not bytesep in self.data:
                 raise BlobError("separator not found in blob data")
             else:
-                bitoffset = self.data.index(bytesep) * 8
+                return self.data.index(bytesep) * 8
+        elif bitsep is not None:
+            if not bitsep in self.data_bits:
+                raise BlobError("separator not found in blob data")
+            else:
+                return self.data_bits.index(bitsep) * 8
 
+    def offset(self, byteoffset=None, bitoffset=None, bytesep=None, bitsep=None):
+        bitoffset = self._get_bit_index(byte=byteoffset, bit=bitoffset, bytesep=bytesep, bitsep=bitsep)
         if bitoffset % 8 != 0:
-            raise BlobError("TODO: support non-byte blocksizes")
-
+            raise BlobError("TODO: support non-byte blocksizes for offset")
         return Blob(data=self.data[bitoffset/8:])
 
     #
