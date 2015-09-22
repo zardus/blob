@@ -129,9 +129,11 @@ class Blob(object):
         bit_candidates = self.blocksize_bits_candidates(min_blocks=min_blocks, min_blocksize=min_blocksize)
         return [ f/8 for f in bit_candidates if f%8 == 0]
 
-    def split(self, bytesize=None, bitsize=None, n=None, bytesep=None, allow_empty=False):
+    def split(self, bytesize=None, bitsize=None, n=None, bytesep=None, bitsep=None, allow_empty=False):
         if bytesep is not None:
             newblocks = [ Blob(data=d) for d in self.data.split(bytesep) if allow_empty or d != '' ]
+        elif bitsep is not None:
+            newblocks = [ Blob(data_bits=d) for d in self.data_bits.split(bitsep) if allow_empty or d != '' ]
         else:
             if n is not None:
                 split_bits_size = self.size_bits/n
@@ -161,9 +163,9 @@ class Blob(object):
             if not bitsep in self.data_bits:
                 raise BlobError("separator not found in blob data")
             elif reverse:
-                return self.data_bits.rindex(bitsep) * 8
+                return self.data_bits.rindex(bitsep)
             else:
-                return self.data_bits.index(bitsep) * 8
+                return self.data_bits.index(bitsep)
 
     def offset(self, byteoffset=None, bitoffset=None, bytesep=None, bitsep=None):
         bitoffset = self._get_bit_index(byte=byteoffset, bit=bitoffset, bytesep=bytesep, bitsep=bitsep)

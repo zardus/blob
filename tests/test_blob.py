@@ -26,6 +26,7 @@ def test_split():
     assert b.split(bitsize=16) == [ cryptalyzer.Blob(data=i) for i in ('AA', 'AA', 'BB', 'BB', 'CC', 'CC') ]
     assert b.split(bytesep='B') == [ cryptalyzer.Blob(data=i) for i in ('AAAA', 'CCCC') ]
     assert b.split(bytesep='B', allow_empty=True) == [ cryptalyzer.Blob(data=i) for i in ('AAAA', '','','', 'CCCC') ]
+    assert b.split(bitsep="01000010") == [ cryptalyzer.Blob(data=i) for i in ('AAAA', 'CCCC') ]
 
 def test_offset():
     b = cryptalyzer.Blob(data="AAAABBBBCCCC")
@@ -33,6 +34,7 @@ def test_offset():
     assert b.offset(byteoffset=2) == cryptalyzer.Blob(data="AABBBBCCCC")
     assert b.offset(bitoffset=32) == cryptalyzer.Blob(data="BBBBCCCC")
     assert b.offset(bytesep="C") == cryptalyzer.Blob(data="CCCC")
+    assert b.offset(bitsep="01000010") == cryptalyzer.Blob("BBBBCCCC")
 
 def test_unpack():
     b = cryptalyzer.Blob(data="AABBBBCC")
@@ -128,6 +130,7 @@ def test_truncate():
     assert a.truncate(1) == cryptalyzer.Blob("A")
     assert a.truncate(bitoffset=16) == cryptalyzer.Blob("AB")
     assert a.truncate(bytesep="C") == cryptalyzer.Blob("AB")
+    assert a.truncate(bitsep="01000010") == cryptalyzer.Blob("A")
 
 def run_all():
     for n,f in globals().iteritems():
