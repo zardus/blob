@@ -37,6 +37,9 @@ def test_split():
     assert b.split(bytesep='B', allow_empty=True) == [ cryptalyzer.Blob(data=i) for i in ('AAAA', '','','', 'CCCC') ]
     assert b.split(bitsep="01000010") == [ cryptalyzer.Blob(data=i) for i in ('AAAA', 'CCCC') ]
 
+    omg_mp = b.mp_split(4).truncate(3).split(1).mp_flatten().mp_items
+    assert omg_mp == [ cryptalyzer.Blob(data=i) for i in ('A', 'A', 'A', 'B', 'B', 'B', 'C', 'C', 'C') ]
+
 def test_offset():
     b = cryptalyzer.Blob(data="AAAABBBBCCCC")
 

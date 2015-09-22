@@ -5,6 +5,7 @@ setup(
     version='0.1',
     packages=['cryptalyzer'],
     install_requires=[
-        'scipy'
+        'scipy',
+        'mulpyplexer',
     ],
 )

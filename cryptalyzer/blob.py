@@ -5,6 +5,7 @@ import functools
 import itertools
 import scipy.stats
 import collections
+import mulpyplexer
 
 def _fix_other_type(f):
     @functools.wraps(f)
@@ -188,6 +189,11 @@ class Blob(object):
         min_blocksize = 8 if min_blocksize is None else min_blocksize * 8
         bit_candidates = self.blocksize_bits_candidates(min_blocks=min_blocks, min_blocksize=min_blocksize)
         return [ f/8 for f in bit_candidates if f%8 == 0]
+
+    def mp_split(self, *args, **kwargs):
+        if args:
+            kwargs['bytesize'] = args[0]
+        return mulpyplexer.MP(self.split(**kwargs))
 
     def split(self, bytesize=None, bitsize=None, n=None, bytesep=None, bitsep=None, allow_empty=False):
         if bytesep is not None:
