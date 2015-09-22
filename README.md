@@ -8,7 +8,7 @@ It tries to automatically solve challenges by decrypting, extracting, and analyz
 Cryptalyzer models each file as a Blob object.
 Each blob should be able to:
 
-* load some data as a blob
+* load some data as a blob (bits or bytes)
 * reason about "block size" (i.e., even divisions of the blob)
 * split the blob by blocksize
 * split the blob into n chunks

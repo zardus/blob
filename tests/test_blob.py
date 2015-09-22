@@ -6,7 +6,7 @@ def test_size():
     assert b.size_bytes == 16
     assert b.size_bits == 16*8
 
-    b = cryptalyzer.Blob(bitdata=cryptalyzer.utils.to_bitstr("AAAABBBBCCCCDDDD"))
+    b = cryptalyzer.Blob(data_bits=cryptalyzer.utils.to_bitstr("AAAABBBBCCCCDDDD"))
     assert b.size_bytes == 16
     assert b.size_bits == 16*8
 
@@ -41,7 +41,7 @@ def test_unpack():
     assert b.unpack_struct('<I') == [ 0x42424141, 0x43434242 ]
     assert b.unpack_struct('c') == list("AABBBBCC")
 
-    b = cryptalyzer.Blob(bitdata=cryptalyzer.utils.to_bitstr("AABBBBCC"))
+    b = cryptalyzer.Blob(data_bits=cryptalyzer.utils.to_bitstr("AABBBBCC"))
     assert b.unpack_struct('>I') == [ 0x41414242, 0x42424343 ]
     assert b.unpack_struct('H') == [ 0x4141, 0x4242, 0x4242, 0x4343 ]
     assert b.unpack_struct('<I') == [ 0x42424141, 0x43434242 ]
@@ -103,6 +103,23 @@ def test_chisquare():
     assert c_r[1] > c_lr[1]
     assert c_lr[1] > c_nr[1]
 test_chisquare.flag = False
+
+def test_bitbyte():
+    a = cryptalyzer.Blob(data="ABCD")
+
+    assert a.data == "ABCD"
+    assert a.data_bits == cryptalyzer.utils.to_bitstr("ABCD")
+    assert a.data == "ABCD"
+    assert a.size_bytes == 4
+    assert a.size_bits == 32
+
+    a = cryptalyzer.Blob(data_bits=cryptalyzer.utils.to_bitstr("ABCD"))
+
+    assert a.data == "ABCD"
+    assert a.data_bits == cryptalyzer.utils.to_bitstr("ABCD")
+    assert a.data == "ABCD"
+    assert a.size_bytes == 4
+    assert a.size_bits == 32
 
 def run_all():
     for n,f in globals().iteritems():

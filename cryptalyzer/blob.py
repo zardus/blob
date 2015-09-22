@@ -6,16 +6,46 @@ import scipy.stats
 import collections
 
 class Blob(object):
-    def __init__(self, dirname=None, filename=None, data=None, bitdata=None):
+    def __init__(self, dirname=None, filename=None, data=None, data_bits=None):
         self.filename = filename
+        self._data_bits = None
+        self._data_bytes = None
 
         if data is not None:
             self.data = data
-        elif bitdata is not None:
-            self.data = utils.from_bitstr(bitdata)
+        elif data_bits is not None:
+            self.data_bits = data_bits
         elif filename is not None:
             self.data = open(os.path.join(dirname, filename), 'r')
         self.blocksize_bits = None
+
+    #
+    # Bit access
+    #
+
+    @property
+    def data(self):
+        if self._data_bytes is not None:
+            return self._data_bytes
+        else:
+            return utils.from_bitstr(self._data_bits)
+
+    @data.setter
+    def data(self, d):
+        self._data_bytes = d
+        self._data_bits = None
+
+    @property
+    def data_bits(self):
+        if self._data_bytes is not None:
+            return utils.to_bitstr(self._data_bytes)
+        else:
+            return self._data_bits
+
+    @data_bits.setter
+    def data_bits(self, d):
+        self._data_bytes = None
+        self._data_bits = d
 
     #
     # operations
@@ -52,7 +82,10 @@ class Blob(object):
 
     @property
     def size_bits(self):
-        return len(self.data)*8
+        if self._data_bits is None:
+            return len(self.data) * 8
+        else:
+            return len(self.data_bits)
 
     def size_blocks(self):
         if self.blocksize_bits is None:
