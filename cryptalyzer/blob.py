@@ -6,7 +6,7 @@ import scipy.stats
 import collections
 
 class Blob(object):
-    def __init__(self, dirname=None, filename=None, data=None, data_bits=None):
+    def __init__(self, data=None, dirname=None, filename=None, data_bits=None):
         self.filename = filename
         self._data_bits = None
         self._data_bytes = None
@@ -145,19 +145,23 @@ class Blob(object):
 
         return newblocks
 
-    def _get_bit_index(self, byte=None, bit=None, bitsep=None, bytesep=None):
+    def _get_bit_index(self, byte=None, bit=None, bitsep=None, bytesep=None, reverse=False):
         if bit is not None:
-            return bit
+            return bit if bit > 0 else self.size_bits + bit
         elif byte is not None:
-            return byte * 8
+            return byte * 8 if byte > 0 else self.size_bits + byte*8
         elif bytesep is not None:
             if not bytesep in self.data:
                 raise BlobError("separator not found in blob data")
+            elif reverse:
+                return self.data.rindex(bytesep) * 8
             else:
                 return self.data.index(bytesep) * 8
         elif bitsep is not None:
             if not bitsep in self.data_bits:
                 raise BlobError("separator not found in blob data")
+            elif reverse:
+                return self.data_bits.rindex(bitsep) * 8
             else:
                 return self.data_bits.index(bitsep) * 8
 
@@ -166,6 +170,14 @@ class Blob(object):
         if bitoffset % 8 != 0:
             raise BlobError("TODO: support non-byte blocksizes for offset")
         return Blob(data=self.data[bitoffset/8:])
+
+    def truncate(self, byteoffset=None, bitoffset=None, bytesep=None, bitsep=None):
+        off = self._get_bit_index(byte=byteoffset, bit=bitoffset, bytesep=bytesep, bitsep=bitsep, reverse=True)
+
+        if off % 8 != 0:
+            return Blob(data=self.data[:off/8])
+        else:
+            return Blob(data_bits=self.data_bits[:off])
 
     #
     # data converters

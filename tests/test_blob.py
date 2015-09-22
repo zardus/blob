@@ -121,6 +121,14 @@ def test_bitbyte():
     assert a.size_bytes == 4
     assert a.size_bits == 32
 
+def test_truncate():
+    a = cryptalyzer.Blob(data="ABCD")
+
+    assert a.truncate(-1) == cryptalyzer.Blob("ABC")
+    assert a.truncate(1) == cryptalyzer.Blob("A")
+    assert a.truncate(bitoffset=16) == cryptalyzer.Blob("AB")
+    assert a.truncate(bytesep="C") == cryptalyzer.Blob("AB")
+
 def run_all():
     for n,f in globals().iteritems():
         if n.startswith('test'):
