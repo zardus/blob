@@ -1,9 +1,21 @@
 import os
 import struct
 import operator
+import functools
 import itertools
 import scipy.stats
 import collections
+
+def _fix_other_type(f):
+    @functools.wraps(f)
+    def fixer(self, o):
+        if isinstance(o, Blob):
+            return f(self, o)
+        elif isinstance(o, str):
+            return f(self, Blob(o))
+        else:
+            raise BlobError("unknown type passed to Blob.%s", f.__name__)
+    return fixer
 
 class Blob(object):
     def __init__(self, data=None, dirname=None, filename=None, data_bits=None):
@@ -56,18 +68,22 @@ class Blob(object):
     def __repr__(self):
         return "B(%r)" % self.data
 
+    @_fix_other_type
     def __eq__(self, o):
         return self.data == o.data
 
     def __hash__(self):
         return hash(self.data)
 
+    @_fix_other_type
     def __xor__(self, o):
         return Blob(data=utils.xor_str(self.data, o.data))
 
+    @_fix_other_type
     def __and__(self, o):
         return Blob(data=utils.and_str(self.data, o.data))
 
+    @_fix_other_type
     def __or__(self, o):
         return Blob(data=utils.or_str(self.data, o.data))
 

@@ -10,6 +10,15 @@ def test_size():
     assert b.size_bytes == 16
     assert b.size_bits == 16*8
 
+def test_eq():
+    b = cryptalyzer.Blob(data="AAAABBBBCCCCDDDD")
+    a = cryptalyzer.Blob(data="AAAABBBBCCCCDDDD")
+
+    assert a == b
+    assert a == "AAAABBBBCCCCDDDD"
+
+    assert a | '\x20' == 'aaaabbbbccccdddd'
+
 def test_blocks():
     b = cryptalyzer.Blob(data="AAAABBBBCCCC")
 

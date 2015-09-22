@@ -1,7 +1,41 @@
 # Cryptalyzer
 
-Cryptalyzer is Shellphish's tool for saving us time with crypto and forensics challenges.
+Cryptalyzer is Shellphish's tool for saving time with crypto and forensics challenges.
 It tries to automatically solve challenges by decrypting, extracting, and analyzing crypto/forensics challenges.
+
+## What can it do
+
+At the moment, cryptalyzer provides a `Blob` class that enables all sorts of cool operations:
+
+```python
+#
+# blobs can be created from byte or bit data
+#
+
+a = cryptalyzer.Blob('ABCD')
+a = cryptalyzer.Blob(data_bits='01000001010000100100001101000100')
+assert a == b
+
+# blobs seamlessly translate between the two
+assert a.data_bits == '01000001010000100100001101000100'
+assert b.data == 'ABCD'
+
+# use integers to access bytes and floats to access bits
+assert b[1] == 'B'
+assert a[1.] == '1'
+assert b[1:-1] == 'BC'
+assert a[8.:-8.] == 'BC'
+
+# blobs provide lots of useful operations
+print a.size_bytes, "divides cleanly into", a.blocksize_bytes_candidates()
+print a.size_bits, "divides cleanly into", a.blocksize_bits_candidates()
+print "The second half of a is:", a.offset(2)
+print "Letters of A are:", a.split(bytesize=1)
+print "Split on the 'B':", a.split(bytesep='B')
+
+# and bitwise ops!
+assert a | '\x20\x20\x20\x20' == 'abcd'
+```
 
 ## How it works
 
@@ -20,9 +54,9 @@ Each blob should be able to:
 * calculate entropy
 * calculate chi-square
 * offset the blob by some number of bits or bytes
+* produce arrays of bitstrings
 - support blobs that aren't byte-aligned
 - analyze randomness of data
-- produce arrays of bitstrings
 - run sliding-window entropy and randomness tests
 - do a distribution of various n-grams
 - find repeating patterns
