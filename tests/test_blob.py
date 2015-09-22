@@ -123,6 +123,19 @@ def test_bitbyte():
     assert a.size_bytes == 4
     assert a.size_bits == 32
 
+def test_getitem():
+    s = "ABCDEFGHIJKLMNOPQRSTUVWX"
+    a = cryptalyzer.Blob(s)
+
+    assert a[1] == cryptalyzer.Blob("B")
+    # TODO: assert a[1.] == cryptalyzer.Blob("B")
+    assert a[-2] == cryptalyzer.Blob("W")
+    assert a[1:-1] == cryptalyzer.Blob(s[1:-1])
+    assert a[1:-1:5] == cryptalyzer.Blob(s[1:-1:5])
+    assert a[::8] == cryptalyzer.Blob(s[::8])
+    assert a[0.::8] == cryptalyzer.Blob('\x00\x00\x00') #pylint:disable=invalid-slice-index
+    assert a[1.:9.] == cryptalyzer.Blob(data='\x82') #pylint:disable=invalid-slice-index
+
 def test_truncate():
     a = cryptalyzer.Blob(data="ABCD")
 

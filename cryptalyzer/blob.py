@@ -54,7 +54,7 @@ class Blob(object):
     #
 
     def __repr__(self):
-        return "<Blob bits=%d>" % self.size_bits
+        return "B(%r)" % self.data
 
     def __eq__(self, o):
         return self.data == o.data
@@ -73,6 +73,50 @@ class Blob(object):
 
     def __invert__(self):
         return Blob(data=utils.not_str(self.data))
+
+    def __getitem__(self, r):
+        if isinstance(r, int):
+            if self._data_bytes is not None:
+                return Blob(data=self.data[r])
+            else:
+                return Blob(data_bits=self._data_bits[r*8:r*8+8])
+        elif isinstance(r, float):
+            r = int(r)
+
+            if self._data_bytes is not None and r % 8 == 0:
+                return Blob(data=self.data[r/8])
+            else:
+                return Blob(data_bits=self.data_bits[r])
+        elif isinstance(r, slice):
+            start = r.start if r.start is not None else None
+            stop = r.stop if r.stop is not None else None
+            step = r.step if r.step is not None else None
+
+            if type(start) is float or type(stop) is float: #bit access
+                start = int(start) if start is not None else None
+                stop = int(stop) if stop is not None else None
+                step = int(step) if step is not None else None
+
+                if (start is None or start % 8 == 0) and (stop is None or stop % 8 == 0) and step is None:
+                    byte_aligned = True
+                else:
+                    byte_aligned = False
+            else: # byte access
+                if start is not None: start *= 8
+                if stop is not None: stop *= 8
+                if step is not None: step *= 8
+                byte_aligned = True
+
+            if byte_aligned and self._data_bytes is not None:
+                rr = slice(
+                    start/8 if start is not None else None,
+                    stop/8 if stop is not None else None,
+                    step/8 if step is not None else None
+                )
+                return Blob(data=self.data[rr])
+            else:
+                rr = slice(start, stop, step)
+                return Blob(data_bits=self.data_bits[rr])
 
     #
     # Size
