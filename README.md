@@ -19,8 +19,9 @@ Each blob should be able to:
 * bitwise not on blobs
 * calculate entropy
 * calculate chi-square
+* offset the blob by some number of bits or bytes
+- support blobs that aren't byte-aligned
 - analyze randomness of data
-- in-place blob operations
 - produce arrays of bitstrings
 - run sliding-window entropy and randomness tests
 - do a distribution of various n-grams

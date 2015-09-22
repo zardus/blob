@@ -27,6 +27,13 @@ def test_split():
     assert b.split(bytesep='B') == [ cryptalyzer.Blob(data=i) for i in ('AAAA', 'CCCC') ]
     assert b.split(bytesep='B', allow_empty=True) == [ cryptalyzer.Blob(data=i) for i in ('AAAA', '','','', 'CCCC') ]
 
+def test_offset():
+    b = cryptalyzer.Blob(data="AAAABBBBCCCC")
+
+    assert b.offset(byteoffset=2) == cryptalyzer.Blob(data="AABBBBCCCC")
+    assert b.offset(bitoffset=32) == cryptalyzer.Blob(data="BBBBCCCC")
+    assert b.offset(bytesep="C") == cryptalyzer.Blob(data="CCCC")
+
 def test_unpack():
     b = cryptalyzer.Blob(data="AABBBBCC")
     assert b.unpack_struct('>I') == [ 0x41414242, 0x42424343 ]
@@ -95,14 +102,18 @@ def test_chisquare():
     assert c_br[1] > c_r[1]
     assert c_r[1] > c_lr[1]
     assert c_lr[1] > c_nr[1]
+test_chisquare.flag = False
 
 def run_all():
     for n,f in globals().iteritems():
         if n.startswith('test'):
             print "RUNNING",n
             try:
-                f()
-                print "SUCCESS"
+                if getattr(f, 'flag', True):
+                    f()
+                    print "SUCCESS"
+                else:
+                    print "SKIPPED"
             except Exception:
                 print "FAIL"
                 raise

@@ -113,6 +113,22 @@ class Blob(object):
 
         return newblocks
 
+    def offset(self, byteoffset=None, bitoffset=None, bytesep=None):
+        if bitoffset is not None:
+            pass
+        elif byteoffset is not None:
+            bitoffset = byteoffset * 8
+        elif bytesep is not None:
+            if not bytesep in self.data:
+                raise BlobError("separator not found in blob data")
+            else:
+                bitoffset = self.data.index(bytesep) * 8
+
+        if bitoffset % 8 != 0:
+            raise BlobError("TODO: support non-byte blocksizes")
+
+        return Blob(data=self.data[bitoffset/8:])
+
     #
     # data converters
     #
