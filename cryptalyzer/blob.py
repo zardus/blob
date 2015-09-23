@@ -231,16 +231,16 @@ class Blob(object):
         bit_candidates = self.blocksize_bits_candidates(min_blocks=min_blocks, min_blocksize=min_blocksize)
         return [ f/8 for f in bit_candidates if f%8 == 0]
 
-    def split(self, bytesize=None, bitsize=None, n=None, bytesep=None, bitsep=None, allow_empty=False):
+    def split(self, bytesep=None, bitsep=None, bytesize=None, bitsize=None, n=None, allow_empty=False):
         '''
         This splits the Blob into several smaller Blobs according to the
         provided parameters.
 
+        @param bytesep: split the Blob along this byte separator
+        @param bitsep: split the Blob along this bit separator
         @param bytesize: each Blob should be this many bytes long
         @param bitsize: each Blob should be this many bits long
         @param n: split the Blob into this many blocks
-        @param bytesep: split the Blob along this byte separator
-        @param bitsep: split the Blob along this bit separator
         @param allow_empty: when splitting with a separator, keep empty blobs
                             (default: False)
 
