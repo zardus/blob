@@ -196,6 +196,11 @@ def test_truncate():
     assert a.truncate(bytesep="C") == cryptalyzer.Blob("AB")
     assert a.truncate(bitsep="01000010") == cryptalyzer.Blob("A")
 
+def test_rotation_xors():
+    a = cryptalyzer.Blob(data="\x01\x02\x04\x08")
+
+    assert list(a.rotating_xors()) == [ "\x00\x00\x00\x00", "\x03\x06\x0c\x09", "\x05\x0a\x05\x0a", "\x09\x03\x06\x0c" ]
+
 def run_all():
     for n,f in globals().iteritems():
         if n.startswith('test'):

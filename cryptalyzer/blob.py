@@ -458,9 +458,9 @@ class Blob(object):
 
         for i in range(other.size_bits/step_bits):
             if step_bits == 8:
-                yield self ^ other.rol_bytes(i)
+                yield self ^ other._rol_bytes(i)
             else:
-                yield self ^ other.rol_bits(i)
+                yield self ^ other._rol_bits(i)
 
 from . import utils
 from .errors import BlobError
