@@ -27,6 +27,37 @@ def test_add():
     assert b+a == cryptalyzer.Blob(data="bA")
     assert b+a+a+b == cryptalyzer.Blob(data="bAAb")
 
+def test_rol():
+    a = cryptalyzer.Blob(data="ABCD")
+
+    assert a.rol(-4) == "ABCD"
+    assert a.rol(-3) == "BCDA"
+    assert a.rol(-2) == "CDAB"
+    assert a.rol(-1) == "DABC"
+    assert a.rol(0) == "ABCD"
+    assert a.rol(1) == "BCDA"
+    assert a.rol(2) == "CDAB"
+    assert a.rol(3) == "DABC"
+    assert a.rol(4) == "ABCD"
+    assert a.rol(5) == "BCDA"
+    assert a.rol(6) == "CDAB"
+    assert a.rol(7) == "DABC"
+    assert a.rol(8) == "ABCD"
+
+    assert a.rol(float(-4)*8) == "ABCD"
+    assert a.rol(float(-3)*8) == "BCDA"
+    assert a.rol(float(-2)*8) == "CDAB"
+    assert a.rol(float(-1)*8) == "DABC"
+    assert a.rol(float(0)*8) == "ABCD"
+    assert a.rol(float(1)*8) == "BCDA"
+    assert a.rol(float(2)*8) == "CDAB"
+    assert a.rol(float(3)*8) == "DABC"
+    assert a.rol(float(4)*8) == "ABCD"
+    assert a.rol(float(5)*8) == "BCDA"
+    assert a.rol(float(6)*8) == "CDAB"
+    assert a.rol(float(7)*8) == "DABC"
+    assert a.rol(float(8)*8) == "ABCD"
+
 def test_blocks():
     b = cryptalyzer.Blob(data="AAAABBBBCCCC")
 

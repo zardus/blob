@@ -7,15 +7,18 @@ import scipy.stats
 import collections
 import mulpyplexer
 
+def _blobify(o):
+    if isinstance(o, Blob):
+        return o
+    elif isinstance(o, str):
+        return Blob(o)
+    else:
+        raise BlobError("can't blobify type %s", type(o))
+
 def _fix_other_type(f):
     @functools.wraps(f)
     def fixer(self, o):
-        if isinstance(o, Blob):
-            return f(self, o)
-        elif isinstance(o, str):
-            return f(self, Blob(o))
-        else:
-            raise BlobError("unknown type passed to Blob.%s", f.__name__)
+        return f(self, _blobify(o))
     return fixer
 
 class Blob(object):
@@ -173,6 +176,25 @@ class Blob(object):
             else:
                 rr = slice(start, stop, step)
                 return Blob(data_bits=self.data_bits[rr])
+
+    def _rol_bytes(self, n):
+        n = n % self.size_bytes
+        return self[n:] + self[:n]
+
+    def _rol_bits(self, n):
+        n = n % self.size_bits
+        if n % 8 == 0 and self.size_bits % 8 == 0:
+            return self._rol_bytes(n/8)
+
+        return self[float(n):] + self[:float(n)] #pylint:disable=invalid-slice-index
+
+    def rol(self, n):
+        if type(n) is float:
+            return self._rol_bits(int(n))
+        elif type(n) is int:
+            return self._rol_bytes(n)
+        else:
+            raise ValueError("invalid type for rotation amount")
 
     #
     # Size
@@ -416,6 +438,29 @@ class Blob(object):
         counts = collections.Counter(elements)
 
         return map(float, scipy.stats.chisquare(counts.values(), f_exp=f_exp))
+
+    #
+    # Some other weird operations
+    #
+
+    def rotating_xors(self, other=None, step_bits=None):
+        '''
+        Yields a sequence of blobs, representing this blob XORed with a elements
+        in a sequence of "other" blobs rotated by each other.
+
+        That description made no sense.
+
+        @params other: the other blob (default: self)
+        @params step_bits: the bits to rotate (left) by every time (default: 8)
+        '''
+        other = self if other is None else _blobify(other)
+        step_bits = 8 if step_bits is None else step_bits
+
+        for i in range(other.size_bits/step_bits):
+            if step_bits == 8:
+                yield self ^ other.rol_bytes(i)
+            else:
+                yield self ^ other.rol_bits(i)
 
 from . import utils
 from .errors import BlobError
