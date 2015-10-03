@@ -462,5 +462,20 @@ class Blob(object):
             else:
                 yield self ^ other._rol_bits(i)
 
+    def count_elements(self, i):
+        '''
+        Returns the number of occurrences of elements of iterable s in the blob.
+        '''
+
+        count = 0
+        for e in i:
+            eb = _blobify(e)
+            if eb.size_bits % 8 == 0:
+                count += self._data_bytes.count(eb._data_bytes)
+            else:
+                count += self._data_bits.count(eb._data_bits)
+
+        return count
+
 from . import utils
 from .errors import BlobError

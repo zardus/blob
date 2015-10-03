@@ -201,6 +201,15 @@ def test_rotation_xors():
 
     assert list(a.rotating_xors()) == [ "\x00\x00\x00\x00", "\x03\x06\x0c\x09", "\x05\x0a\x05\x0a", "\x09\x03\x06\x0c" ]
 
+def test_count_elements():
+    a = cryptalyzer.Blob(data="AABCDDDD")
+
+    assert a.count_elements({"A"}) == 2
+    assert a.count_elements({"D"}) == 4
+    assert a.count_elements({"A", "D"}) == 6
+    assert a.count_elements({"C", "D"}) == 5
+    assert a.count_elements({cryptalyzer.Blob(data_bits=cryptalyzer.utils.to_bitstr("A"))}) == 2
+
 def run_all():
     for n,f in globals().iteritems():
         if n.startswith('test'):
