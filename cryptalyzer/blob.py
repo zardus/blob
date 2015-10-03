@@ -123,6 +123,13 @@ class Blob(object):
     def __invert__(self):
         return Blob(data=utils.not_str(self.data))
 
+    @_fix_other_type
+    def __add__(self, o):
+        if self._data_bytes is not None and o._data_bytes is not None:
+            return Blob(data=self._data_bytes+o._data_bytes)
+        else:
+            return Blob(data_bits=self._data_bits+o._data_bits)
+
     def __getitem__(self, r):
         if isinstance(r, int):
             if self._data_bytes is not None:

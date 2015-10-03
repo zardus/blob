@@ -19,6 +19,14 @@ def test_eq():
 
     assert a | '\x20' == 'aaaabbbbccccdddd'
 
+def test_add():
+    a = cryptalyzer.Blob(data="A")
+    b = cryptalyzer.Blob(data="b")
+
+    assert a+b == cryptalyzer.Blob(data="Ab")
+    assert b+a == cryptalyzer.Blob(data="bA")
+    assert b+a+a+b == cryptalyzer.Blob(data="bAAb")
+
 def test_blocks():
     b = cryptalyzer.Blob(data="AAAABBBBCCCC")
 
