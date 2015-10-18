@@ -210,6 +210,15 @@ def test_count_elements():
     assert a.count_elements({"C", "D"}) == 5
     assert a.count_elements({cryptalyzer.Blob(data_bits=cryptalyzer.utils.to_bitstr("A"))}) == 2
 
+def test_just():
+    a = cryptalyzer.Blob(data="A")
+    o = cryptalyzer.Blob(data_bits="111")
+
+    assert a.ljust(4) == "A   "
+    assert a.ljust(4, 'B') == "ABBB"
+    assert o.ljust(float(4)).data_bits == "1110"
+    assert o.ljust(float(4), '1').data_bits == "1111"
+
 def run_all():
     for n,f in globals().iteritems():
         if n.startswith('test'):

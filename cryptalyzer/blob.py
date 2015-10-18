@@ -195,6 +195,23 @@ class Blob(object):
         else:
             raise ValueError("invalid type for rotation amount")
 
+    def ljust(self, n, what=None):
+        '''
+        Returns a left-justified Blob.
+
+        @param n: the size to justify to. Float for bits, int for bytes.
+        @param what: the char to justify with. The default is ' ' for bytes
+                     and '0' for bits.
+        '''
+        if type(n) is int:
+            what = ' ' if what is None else what
+            return Blob(data=self.data.ljust(n, what))
+        elif type(n) is float:
+            what = '0' if what is None else what
+            return Blob(data_bits=self.data_bits.ljust(int(n), what))
+        else:
+            raise ValueError("invalid type for ljust amount")
+
     #
     # Size
     #
