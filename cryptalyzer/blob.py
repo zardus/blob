@@ -55,10 +55,6 @@ class Blob(object):
             self.data = open(os.path.join(dirname, filename), 'r')
         self.blocksize_bits = None
 
-        if self._data_bits is not None and len(self._data_bits) % 8 != 0:
-            raise BlobError("TODO: support non-byte blocksizes")
-
-
     #
     # Bit access
     #
@@ -102,7 +98,10 @@ class Blob(object):
     #
 
     def __repr__(self):
-        return "B(%r)" % self.data
+        if self.byte_aligned:
+            return "B(%r)" % self.data
+        else:
+            return "B(b%r)" % self.data_bits
 
     @_fix_other_type
     def __eq__(self, o):
@@ -183,7 +182,7 @@ class Blob(object):
 
     def _rol_bits(self, n):
         n = n % self.size_bits
-        if n % 8 == 0 and self.size_bits % 8 == 0:
+        if n % 8 == 0 and self.byte_aligned:
             return self._rol_bytes(n/8)
 
         return self[float(n):] + self[:float(n)] #pylint:disable=invalid-slice-index
@@ -199,6 +198,10 @@ class Blob(object):
     #
     # Size
     #
+
+    @property
+    def byte_aligned(self):
+        return self.size_bits % 8 == 0
 
     @property
     def size_bytes(self):
@@ -287,9 +290,9 @@ class Blob(object):
                 split_bits_size = self._get_bit_index(byte=bytesize, bit=bitsize)
 
             if split_bits_size % 8 != 0:
-                raise BlobError("TODO: support non-byte blocksizes for splitting")
-
-            newblocks = [ Blob(data=self.data[i:i+split_bits_size/8]) for i in range(0, self.size_bytes, split_bits_size/8) ]
+                newblocks = [ Blob(data_bits=self.data_bits[i:i+split_bits_size]) for i in range(0, self.size_bits, split_bits_size) ]
+            else:
+                newblocks = [ Blob(data=self.data[i:i+split_bits_size/8]) for i in range(0, self.size_bytes, split_bits_size/8) ]
 
         return newblocks
 
@@ -470,7 +473,7 @@ class Blob(object):
         count = 0
         for e in i:
             eb = _blobify(e)
-            if eb.size_bits % 8 == 0:
+            if eb.byte_aligned:
                 count += self._data_bytes.count(eb._data_bytes)
             else:
                 count += self._data_bits.count(eb._data_bits)
