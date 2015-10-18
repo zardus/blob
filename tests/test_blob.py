@@ -219,6 +219,11 @@ def test_just():
     assert o.ljust(float(4)).data_bits == "1110"
     assert o.ljust(float(4), '1').data_bits == "1111"
 
+    assert a.rjust(4) == "   A"
+    assert a.rjust(4, 'B') == "BBBA"
+    assert o.rjust(float(4)).data_bits == "0111"
+    assert o.rjust(float(4), '1').data_bits == "1111"
+
 def run_all():
     for n,f in globals().iteritems():
         if n.startswith('test'):
