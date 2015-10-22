@@ -92,16 +92,16 @@ def test_offset():
 
 def test_unpack():
     b = blob.Blob(data="AABBBBCC")
-    assert b.unpack_struct('>I') == [ 0x41414242, 0x42424343 ]
-    assert b.unpack_struct('H') == [ 0x4141, 0x4242, 0x4242, 0x4343 ]
-    assert b.unpack_struct('<I') == [ 0x42424141, 0x43434242 ]
-    assert b.unpack_struct('c') == list("AABBBBCC")
+    assert b.unpack('>I') == [ 0x41414242, 0x42424343 ]
+    assert b.unpack('H') == [ 0x4141, 0x4242, 0x4242, 0x4343 ]
+    assert b.unpack('<I') == [ 0x42424141, 0x43434242 ]
+    assert b.unpack('c') == list("AABBBBCC")
 
     b = blob.Blob(data_bits=blob.utils.to_bitstr("AABBBBCC"))
-    assert b.unpack_struct('>I') == [ 0x41414242, 0x42424343 ]
-    assert b.unpack_struct('H') == [ 0x4141, 0x4242, 0x4242, 0x4343 ]
-    assert b.unpack_struct('<I') == [ 0x42424141, 0x43434242 ]
-    assert b.unpack_struct('c') == list("AABBBBCC")
+    assert b.unpack('>I') == [ 0x41414242, 0x42424343 ]
+    assert b.unpack('H') == [ 0x4141, 0x4242, 0x4242, 0x4343 ]
+    assert b.unpack('<I') == [ 0x42424141, 0x43434242 ]
+    assert b.unpack('c') == list("AABBBBCC")
 
 def test_bitops():
     a = blob.Blob(data='ABCD')

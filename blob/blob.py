@@ -419,7 +419,7 @@ class Blob(object):
     # data converters
     #
 
-    def unpack_struct(self, fmt, repeat=True, s=None):
+    def unpack(self, fmt, repeat=True, s=None):
         '''
         Unpacks a Blob according to a struct format and returns the results.
 
@@ -443,7 +443,7 @@ class Blob(object):
         else:
             o = [ ]
             for b in self.split(bytesize=s.size):
-                o.extend(b.unpack_struct(fmt, repeat=False, s=s))
+                o.extend(b.unpack(fmt, repeat=False, s=s))
             return o
 
     #
