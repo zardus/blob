@@ -201,6 +201,13 @@ class Blob(object):
         return self[float(n):] + self[:float(n)]
 
     def rol(self, n):
+        '''
+        Rotates a Blob left by n. If n is an int, it is interpreted as a byte
+        rotation amount. If it is a float, it is interpreted as a bit rotation
+        amount.
+
+        @returns the rotated Blob
+        '''
         if type(n) is float:
             return self._rol_bits(int(n))
         elif type(n) is int:
@@ -248,6 +255,10 @@ class Blob(object):
 
     @property
     def byte_aligned(self):
+        '''
+        Returns True if the Blob is byte-aligned (i.e., the number of bits it
+        comprises is divisible by 8), False otherwise.
+        '''
         return self.size_bits % 8 == 0
 
     @property
