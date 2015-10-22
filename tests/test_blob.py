@@ -71,7 +71,9 @@ def test_split():
 
     assert b.split(n=3) == [ blob.Blob(data=i) for i in ('AAAA', 'BBBB', 'CCCC') ]
     assert b.split(size=3) == [ blob.Blob(data=i) for i in ('AAA', 'ABB', 'BBC', 'CCC') ]
+    assert b.split(size=3, maxsplit=2) == [ blob.Blob(data=i) for i in ('AAA', 'ABB', 'BBCCCC') ]
     assert b.split(size_bits=16) == [ blob.Blob(data=i) for i in ('AA', 'AA', 'BB', 'BB', 'CC', 'CC') ]
+    assert b.split(size_bits=16, maxsplit=3) == [ blob.Blob(data=i) for i in ('AA', 'AA', 'BB', 'BBCCCC') ]
     assert b.split(sep='B') == [ blob.Blob(data=i) for i in ('AAAA', 'CCCC') ]
     assert b.split(sep='B', allow_empty=True) == [ blob.Blob(data=i) for i in ('AAAA', '','','', 'CCCC') ]
     assert b.split(sep_bits="01000010") == [ blob.Blob(data=i) for i in ('AAAA', 'CCCC') ]

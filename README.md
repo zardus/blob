@@ -40,7 +40,7 @@ assert a | '\x20\x20\x20\x20' == 'abcd'
 The design goals for blob are:
 
 - well tested - we should be able to use this in CTFs without worrying that it's buggy
-- familiar - blobs should comply with other Python API where possible (for example, the `split` function currently *doesn't* do this)
+- familiar - blobs should comply with other Python API where possible
 - flexible - we should be able to do stuff that we don't necessarily anticipate with blobs
 
 ## Software planning

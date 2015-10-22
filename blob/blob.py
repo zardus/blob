@@ -344,6 +344,10 @@ class Blob(object):
             else:
                 newblocks = [ Blob(data=self.data[i:i+split_bits_size/8]) for i in range(0, self.size, split_bits_size/8) ]
 
+            if maxsplit is not None:
+                leftsize = sum(b.size_bits for b in newblocks[:maxsplit])
+                newblocks = newblocks[:maxsplit] + [ self.offset(offset_bits=leftsize) ]
+
         return newblocks
 
     def mp_split(self, *args, **kwargs):
