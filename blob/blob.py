@@ -373,7 +373,7 @@ class Blob(object):
             raise BlobError("please install the mulpyplexer module (`pip install mulpyplexer`) to use mulpyplexing features!")
 
         if args:
-            kwargs['size'] = args[0]
+            kwargs['sep'] = args[0]
         return mulpyplexer.MP(self.split(**kwargs))
 
     def _get_bit_index(self, byte=None, bit=None, sep_bits=None, sep=None, reverse=False):
