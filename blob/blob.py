@@ -308,13 +308,14 @@ class Blob(object):
         bit_candidates = self.blocksize_bits_candidates(min_blocks=min_blocks, min_blocksize=min_blocksize)
         return [ f/8 for f in bit_candidates if f%8 == 0]
 
-    def split(self, sep=None, sep_bits=None, size=None, size_bits=None, n=None, allow_empty=False):
+    def split(self, sep=None, sep_bits=None, maxsplit=None, size=None, size_bits=None, n=None, allow_empty=False):
         '''
         This splits the Blob into several smaller Blobs according to the
         provided parameters.
 
         @param sep: split the Blob along this byte separator
         @param sep_bits: split the Blob along this bit separator
+        @param maxsplit: the maximum number of splits to do
         @param size: each Blob should be this many bytes long
         @param size_bits: each Blob should be this many bits long
         @param n: split the Blob into this many blocks
@@ -325,9 +326,11 @@ class Blob(object):
         '''
 
         if sep is not None:
-            newblocks = [ Blob(data=d) for d in self.data.split(sep) if allow_empty or d != '' ]
+            split_args = [ sep ] if maxsplit is None else [ sep, maxsplit ]
+            newblocks = [ Blob(data=d) for d in self.data.split(*split_args) if allow_empty or d != '' ]
         elif sep_bits is not None:
-            newblocks = [ Blob(data_bits=d) for d in self.data_bits.split(sep_bits) if allow_empty or d != '' ]
+            split_args = [ sep_bits ] if maxsplit is None else [ sep_bits, maxsplit ]
+            newblocks = [ Blob(data_bits=d) for d in self.data_bits.split(*split_args) if allow_empty or d != '' ]
         else:
             if n is not None:
                 split_bits_size = self.size_bits/n
