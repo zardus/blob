@@ -40,6 +40,8 @@ class Blob(object):
     statistical analyses.
     '''
 
+    #pylint:disable=invalid-slice-index
+
     def __init__(self, data=None, data_bits=None, dirname=None, filename=None):
         '''
         Initializes a Blob object. Blobs can be created from different types of
@@ -196,7 +198,7 @@ class Blob(object):
         if n % 8 == 0 and self.byte_aligned:
             return self._rol_bytes(n/8)
 
-        return self[float(n):] + self[:float(n)] #pylint:disable=invalid-slice-index
+        return self[float(n):] + self[:float(n)]
 
     def rol(self, n):
         if type(n) is float:
@@ -395,10 +397,9 @@ class Blob(object):
                         separator)
         @param sep_bits: chop everything after a separator of bits (keep the separator)
         '''
-        offset_bits = self._get_bit_index(byte=offset, bit=offset_bits, sep=sep, sep_bits=sep_bits)
-        if offset_bits % 8 != 0:
-            raise BlobError("TODO: support non-byte blocksizes for offset")
-        return Blob(data=self.data[offset_bits/8:])
+        off = self._get_bit_index(byte=offset, bit=offset_bits, sep=sep, sep_bits=sep_bits)
+        if off % 8 != 0: return self[off/8:]
+        else: return self[float(off):]
 
     def truncate(self, offset=None, offset_bits=None, sep=None, sep_bits=None):
         '''
@@ -412,11 +413,8 @@ class Blob(object):
                        separator)
         '''
         off = self._get_bit_index(byte=offset, bit=offset_bits, sep=sep, sep_bits=sep_bits, reverse=True)
-
-        if off % 8 != 0:
-            return Blob(data=self.data[:off/8])
-        else:
-            return Blob(data_bits=self.data_bits[:off])
+        if off % 8 != 0: return self[:off/8]
+        else: return self[:float(off)]
 
     #
     # data converters
