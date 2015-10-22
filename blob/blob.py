@@ -308,15 +308,15 @@ class Blob(object):
         bit_candidates = self.blocksize_bits_candidates(min_blocks=min_blocks, min_blocksize=min_blocksize)
         return [ f/8 for f in bit_candidates if f%8 == 0]
 
-    def split(self, bytesep=None, bitsep=None, bytesize=None, bitsize=None, n=None, allow_empty=False):
+    def split(self, sep=None, sep_bits=None, size=None, size_bits=None, n=None, allow_empty=False):
         '''
         This splits the Blob into several smaller Blobs according to the
         provided parameters.
 
-        @param bytesep: split the Blob along this byte separator
-        @param bitsep: split the Blob along this bit separator
-        @param bytesize: each Blob should be this many bytes long
-        @param bitsize: each Blob should be this many bits long
+        @param sep: split the Blob along this byte separator
+        @param sep_bits: split the Blob along this bit separator
+        @param size: each Blob should be this many bytes long
+        @param size_bits: each Blob should be this many bits long
         @param n: split the Blob into this many blocks
         @param allow_empty: when splitting with a separator, keep empty blobs
                             (default: False)
@@ -324,15 +324,15 @@ class Blob(object):
         @returns a list of Blobs
         '''
 
-        if bytesep is not None:
-            newblocks = [ Blob(data=d) for d in self.data.split(bytesep) if allow_empty or d != '' ]
-        elif bitsep is not None:
-            newblocks = [ Blob(data_bits=d) for d in self.data_bits.split(bitsep) if allow_empty or d != '' ]
+        if sep is not None:
+            newblocks = [ Blob(data=d) for d in self.data.split(sep) if allow_empty or d != '' ]
+        elif sep_bits is not None:
+            newblocks = [ Blob(data_bits=d) for d in self.data_bits.split(sep_bits) if allow_empty or d != '' ]
         else:
             if n is not None:
                 split_bits_size = self.size_bits/n
             else:
-                split_bits_size = self._get_bit_index(byte=bytesize, bit=bitsize)
+                split_bits_size = self._get_bit_index(byte=size, bit=size_bits)
 
             if split_bits_size % 8 != 0:
                 newblocks = [ Blob(data_bits=self.data_bits[i:i+split_bits_size]) for i in range(0, self.size_bits, split_bits_size) ]
@@ -353,10 +353,10 @@ class Blob(object):
             raise BlobError("please install the mulpyplexer module (`pip install mulpyplexer`) to use mulpyplexing features!")
 
         if args:
-            kwargs['bytesize'] = args[0]
+            kwargs['size'] = args[0]
         return mulpyplexer.MP(self.split(**kwargs))
 
-    def _get_bit_index(self, byte=None, bit=None, bitsep=None, bytesep=None, reverse=False):
+    def _get_bit_index(self, byte=None, bit=None, sep_bits=None, sep=None, reverse=False):
         '''
         This is a convenience function to translate indexing data (according to
         bits, bytes, etc) into an absolute bit index.
@@ -367,48 +367,48 @@ class Blob(object):
             return bit if bit > 0 else self.size_bits + bit
         elif byte is not None:
             return byte * 8 if byte > 0 else self.size_bits + byte*8
-        elif bytesep is not None:
-            if not bytesep in self.data:
+        elif sep is not None:
+            if not sep in self.data:
                 raise BlobError("separator not found in blob data")
             elif reverse:
-                return self.data.rindex(bytesep) * 8
+                return self.data.rindex(sep) * 8
             else:
-                return self.data.index(bytesep) * 8
-        elif bitsep is not None:
-            if not bitsep in self.data_bits:
+                return self.data.index(sep) * 8
+        elif sep_bits is not None:
+            if not sep_bits in self.data_bits:
                 raise BlobError("separator not found in blob data")
             elif reverse:
-                return self.data_bits.rindex(bitsep)
+                return self.data_bits.rindex(sep_bits)
             else:
-                return self.data_bits.index(bitsep)
+                return self.data_bits.index(sep_bits)
 
-    def offset(self, byteoffset=None, bitoffset=None, bytesep=None, bitsep=None):
+    def offset(self, offset=None, offset_bits=None, sep=None, sep_bits=None):
         '''
         Chops off the beginning of a Blob.
 
-        @param byteoffset: the number of bytes to chop
-        @param bitoffset: the number of bits to chop
-        @param bytesep: chop everything after a separator of bytes (keep the
+        @param offset: the number of bytes to chop
+        @param offset_bits: the number of bits to chop
+        @param sep: chop everything after a separator of bytes (keep the
                         separator)
-        @param bitsep: chop everything after a separator of bits (keep the separator)
+        @param sep_bits: chop everything after a separator of bits (keep the separator)
         '''
-        bitoffset = self._get_bit_index(byte=byteoffset, bit=bitoffset, bytesep=bytesep, bitsep=bitsep)
-        if bitoffset % 8 != 0:
+        offset_bits = self._get_bit_index(byte=offset, bit=offset_bits, sep=sep, sep_bits=sep_bits)
+        if offset_bits % 8 != 0:
             raise BlobError("TODO: support non-byte blocksizes for offset")
-        return Blob(data=self.data[bitoffset/8:])
+        return Blob(data=self.data[offset_bits/8:])
 
-    def truncate(self, byteoffset=None, bitoffset=None, bytesep=None, bitsep=None):
+    def truncate(self, offset=None, offset_bits=None, sep=None, sep_bits=None):
         '''
         Chops off the end of a Blob.
 
-        @param byteoffset: the number of bytes to keep
-        @param bitoffset: the number of bits to keep
-        @param bytesep: chop everything after a separator of bytes (including
+        @param offset: the number of bytes to keep
+        @param offset_bits: the number of bits to keep
+        @param sep: chop everything after a separator of bytes (including
                         the separator)
-        @param bitsep: chop everything after a separator of bits (including the
+        @param sep_bits: chop everything after a separator of bits (including the
                        separator)
         '''
-        off = self._get_bit_index(byte=byteoffset, bit=bitoffset, bytesep=bytesep, bitsep=bitsep, reverse=True)
+        off = self._get_bit_index(byte=offset, bit=offset_bits, sep=sep, sep_bits=sep_bits, reverse=True)
 
         if off % 8 != 0:
             return Blob(data=self.data[:off/8])
@@ -442,7 +442,7 @@ class Blob(object):
             return s.unpack(self.data)
         else:
             o = [ ]
-            for b in self.split(bytesize=s.size):
+            for b in self.split(size=s.size):
                 o.extend(b.unpack(fmt, repeat=False, s=s))
             return o
 
@@ -464,7 +464,7 @@ class Blob(object):
 
         @param base: an alternate base for the entropy
         '''
-        elements = self.split(bytesize=blocksize, bitsize=blocksize_bits, **split_kwargs)
+        elements = self.split(size=blocksize, size_bits=blocksize_bits, **split_kwargs)
         counts = collections.Counter(elements)
 
         if _scipy_fail:
@@ -488,7 +488,7 @@ class Blob(object):
 
         @param base: an alternate base for the entropy
         '''
-        elements = self.split(bytesize=blocksize, bitsize=blocksize_bits, **split_kwargs)
+        elements = self.split(size=blocksize, size_bits=blocksize_bits, **split_kwargs)
         counts = collections.Counter(elements)
 
         if _scipy_fail:

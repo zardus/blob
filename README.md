@@ -25,11 +25,11 @@ assert b[1:-1] == 'BC'
 assert a[8.:-8.] == 'BC'
 
 # blobs provide lots of useful operations
-print a.size_bytes, "divides cleanly into", a.blocksize_bytes_candidates()
+print a.size, "divides cleanly into", a.blocksize_candidates()
 print a.size_bits, "divides cleanly into", a.blocksize_bits_candidates()
 print "The second half of a is:", a.offset(2)
-print "Letters of A are:", a.split(bytesize=1)
-print "Split on the 'B':", a.split(bytesep='B')
+print "Letters of A are:", a.split(size=1)
+print "Split on the 'B':", a.split(sep='B')
 
 # and bitwise ops!
 assert a | '\x20\x20\x20\x20' == 'abcd'

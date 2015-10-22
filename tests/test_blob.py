@@ -70,25 +70,25 @@ def test_split():
     b = blob.Blob(data="AAAABBBBCCCC")
 
     assert b.split(n=3) == [ blob.Blob(data=i) for i in ('AAAA', 'BBBB', 'CCCC') ]
-    assert b.split(bytesize=3) == [ blob.Blob(data=i) for i in ('AAA', 'ABB', 'BBC', 'CCC') ]
-    assert b.split(bitsize=16) == [ blob.Blob(data=i) for i in ('AA', 'AA', 'BB', 'BB', 'CC', 'CC') ]
-    assert b.split(bytesep='B') == [ blob.Blob(data=i) for i in ('AAAA', 'CCCC') ]
-    assert b.split(bytesep='B', allow_empty=True) == [ blob.Blob(data=i) for i in ('AAAA', '','','', 'CCCC') ]
-    assert b.split(bitsep="01000010") == [ blob.Blob(data=i) for i in ('AAAA', 'CCCC') ]
+    assert b.split(size=3) == [ blob.Blob(data=i) for i in ('AAA', 'ABB', 'BBC', 'CCC') ]
+    assert b.split(size_bits=16) == [ blob.Blob(data=i) for i in ('AA', 'AA', 'BB', 'BB', 'CC', 'CC') ]
+    assert b.split(sep='B') == [ blob.Blob(data=i) for i in ('AAAA', 'CCCC') ]
+    assert b.split(sep='B', allow_empty=True) == [ blob.Blob(data=i) for i in ('AAAA', '','','', 'CCCC') ]
+    assert b.split(sep_bits="01000010") == [ blob.Blob(data=i) for i in ('AAAA', 'CCCC') ]
 
 def test_mp_split():
     b = blob.Blob(data="AAAABBBBCCCC")
 
-    omg_mp = b.mp_split(bytesize=4).truncate(3).split(bytesize=1).mp_flatten().mp_items
+    omg_mp = b.mp_split(size=4).truncate(3).split(size=1).mp_flatten().mp_items
     assert omg_mp == [ blob.Blob(data=i) for i in ('A', 'A', 'A', 'B', 'B', 'B', 'C', 'C', 'C') ]
 
 def test_offset():
     b = blob.Blob(data="AAAABBBBCCCC")
 
-    assert b.offset(byteoffset=2) == blob.Blob(data="AABBBBCCCC")
-    assert b.offset(bitoffset=32) == blob.Blob(data="BBBBCCCC")
-    assert b.offset(bytesep="C") == blob.Blob(data="CCCC")
-    assert b.offset(bitsep="01000010") == blob.Blob("BBBBCCCC")
+    assert b.offset(offset=2) == blob.Blob(data="AABBBBCCCC")
+    assert b.offset(offset_bits=32) == blob.Blob(data="BBBBCCCC")
+    assert b.offset(sep="C") == blob.Blob(data="CCCC")
+    assert b.offset(sep_bits="01000010") == blob.Blob("BBBBCCCC")
 
 def test_unpack():
     b = blob.Blob(data="AABBBBCC")
@@ -195,9 +195,9 @@ def test_truncate():
 
     assert a.truncate(-1) == blob.Blob("ABC")
     assert a.truncate(1) == blob.Blob("A")
-    assert a.truncate(bitoffset=16) == blob.Blob("AB")
-    assert a.truncate(bytesep="C") == blob.Blob("AB")
-    assert a.truncate(bitsep="01000010") == blob.Blob("A")
+    assert a.truncate(offset_bits=16) == blob.Blob("AB")
+    assert a.truncate(sep="C") == blob.Blob("AB")
+    assert a.truncate(sep_bits="01000010") == blob.Blob("A")
 
 def test_rotation_xors():
     a = blob.Blob(data="\x01\x02\x04\x08")
