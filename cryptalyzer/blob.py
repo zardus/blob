@@ -3,9 +3,20 @@ import struct
 import operator
 import functools
 import itertools
-import scipy.stats
+
+try:
+    import scipy.stats
+    _scipy_fail = False
+except ImportError:
+    _scipy_fail = True
+
+try:
+    import mulpyplexer
+    _mp_fail = False
+except ImportError:
+    _mp_fail = True
+
 import collections
-import mulpyplexer
 
 def _blobify(o):
     if isinstance(o, Blob):
@@ -338,6 +349,9 @@ class Blob(object):
 
         @returns a mulpyplexer.MP object full of Blobs
         '''
+        if _mp_fail:
+            raise BlobError("please install the mulpyplexer module (`pip install mulpyplexer`) to use mulpyplexing features!")
+
         if args:
             kwargs['bytesize'] = args[0]
         return mulpyplexer.MP(self.split(**kwargs))
@@ -453,6 +467,9 @@ class Blob(object):
         elements = self.split(bytesize=blocksize_bytes, bitsize=blocksize_bits, **split_kwargs)
         counts = collections.Counter(elements)
 
+        if _scipy_fail:
+            raise BlobError("please install the scipy to use statistical analyses!")
+
         return float(scipy.stats.entropy(counts.values(), base=base))
 
     def chisquare(self, blocksize_bytes=None, blocksize_bits=None, f_exp=None, **split_kwargs):
@@ -473,6 +490,9 @@ class Blob(object):
         '''
         elements = self.split(bytesize=blocksize_bytes, bitsize=blocksize_bits, **split_kwargs)
         counts = collections.Counter(elements)
+
+        if _scipy_fail:
+            raise BlobError("please install the scipy to use statistical analyses!")
 
         return map(float, scipy.stats.chisquare(counts.values(), f_exp=f_exp))
 
