@@ -1,19 +1,17 @@
-# Cryptalyzer
+# Blob
 
-Cryptalyzer is Shellphish's tool for saving time with crypto and forensics challenges.
-It tries to automatically solve challenges by decrypting, extracting, and analyzing crypto/forensics challenges.
+A Blob is a nice way to work with unstructured data.
+It allows you to have different views into data (bits, bytes, ints, etc), run analyses, and easily slice the data.
+I wrote it to save Shellphish some time with crypto and forensics challenges.
 
 ## What can it do
 
-At the moment, cryptalyzer provides a `Blob` class that enables all sorts of cool operations:
+Blob provides a `Blob` class that enables all sorts of cool operations:
 
 ```python
-#
 # blobs can be created from byte or bit data
-#
-
-a = cryptalyzer.Blob('ABCD')
-a = cryptalyzer.Blob(data_bits='01000001010000100100001101000100')
+a = blob.Blob('ABCD')
+a = blob.Blob(data_bits='01000001010000100100001101000100')
 assert a == b
 
 # blobs seamlessly translate between the two
@@ -37,9 +35,16 @@ print "Split on the 'B':", a.split(bytesep='B')
 assert a | '\x20\x20\x20\x20' == 'abcd'
 ```
 
-## How it works
+## Design goals
 
-Cryptalyzer models each file as a Blob object.
+The design goals for blob are:
+
+- well tested - we should be able to use this in CTFs without worrying that it's buggy
+- familiar - blobs should comply with other Python API where possible (for example, the `split` function currently *doesn't* do this)
+- flexible - we should be able to do stuff that we don't necessarily anticipate with blobs
+
+## Software planning
+
 Each blob should be able to:
 
 * load some data as a blob (bits or bytes)
@@ -55,8 +60,8 @@ Each blob should be able to:
 * calculate chi-square
 * offset the blob by some number of bits or bytes
 * produce arrays of bitstrings
-- support blobs that aren't byte-aligned
-- analyze randomness of data
+* support blobs that aren't byte-aligned (testing needed)
+* analyze randomness of data
 - run sliding-window entropy and randomness tests
 - do a distribution of various n-grams
 - find repeating patterns
@@ -66,14 +71,6 @@ Each blob should be able to:
 - get dictionary words
 - apply error-correction like reed-solomon
 - compute hashes and checksums
-- track the blob hierarchy
-- keep input blobs in 'input/'
-- keep blobs determined to be potential keys in 'keys/'
-- keep blobs that look interesting in 'interesting/'
-- keep other blobs in "unknown"
-
-This functionality will require some of the following:
-
+- track the blob hierarchy, do automatic analysis, and organize blobs ('input', 'keys', 'interesting', 'unknown')
 - crypto functionality to apply a cipher to some code (pass-through to pycrypto for real stuff, but might be nice to implement for reuse?)
 - block chaining functionality to apply cbc/ebc/ctr/etc
-- error-correction implementations

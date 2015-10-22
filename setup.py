@@ -1,9 +1,9 @@
 from distutils.core import setup
 
 setup(
-    name='cryptalyzer',
+    name='blob',
     version='0.1',
-    packages=['cryptalyzer'],
+    packages=['blob'],
     install_requires=[
     ],
 )
