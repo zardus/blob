@@ -3,11 +3,11 @@ import random
 
 def test_size():
     b = blob.Blob(data="AAAABBBBCCCCDDDD")
-    assert b.size_bytes == 16
+    assert b.size == 16
     assert b.size_bits == 16*8
 
     b = blob.Blob(data_bits=blob.utils.to_bitstr("AAAABBBBCCCCDDDD"))
-    assert b.size_bytes == 16
+    assert b.size == 16
     assert b.size_bits == 16*8
 
 def test_eq():
@@ -62,7 +62,7 @@ def test_blocks():
     b = blob.Blob(data="AAAABBBBCCCC")
 
     bs_bits_candidates = b.blocksize_bits_candidates()
-    bs_bytes_candidates = b.blocksize_bytes_candidates()
+    bs_bytes_candidates = b.blocksize_candidates()
     assert bs_bits_candidates == [ 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48 ]
     assert bs_bytes_candidates == [ 1, 2, 3, 4, 6 ]
 
@@ -127,14 +127,14 @@ def test_entropy():
     d = blob.Blob(data="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     e = blob.Blob(data=''.join(chr(i) for i in range(256)))
 
-    assert a.entropy(blocksize_bytes=1) == 1.5
-    assert b.entropy(blocksize_bytes=1) == 1.584962500721156
-    assert c.entropy(blocksize_bytes=1) == 1
-    assert c.entropy(blocksize_bytes=3) == 1
-    assert c.entropy(blocksize_bytes=2) == 0
-    assert d.entropy(blocksize_bytes=1) == 0
-    assert d.entropy(blocksize_bytes=3) == 0
-    assert round(e.entropy(blocksize_bytes=1), 5) == 8.0
+    assert a.entropy(blocksize=1) == 1.5
+    assert b.entropy(blocksize=1) == 1.584962500721156
+    assert c.entropy(blocksize=1) == 1
+    assert c.entropy(blocksize=3) == 1
+    assert c.entropy(blocksize=2) == 0
+    assert d.entropy(blocksize=1) == 0
+    assert d.entropy(blocksize=3) == 0
+    assert round(e.entropy(blocksize=1), 5) == 8.0
 
 def test_chisquare():
     random_data = ''.join(chr(random.randrange(0, 256)) for _ in range(512*1024))
@@ -144,10 +144,10 @@ def test_chisquare():
     lr = blob.Blob(data=random_data+'A'*1024)
     nr = blob.Blob(data='A'*1024+'BBBBB')
 
-    c_r = r.chisquare(blocksize_bytes=1)
-    c_br = br.chisquare(blocksize_bytes=1)
-    c_lr = lr.chisquare(blocksize_bytes=1)
-    c_nr = nr.chisquare(blocksize_bytes=1)
+    c_r = r.chisquare(blocksize=1)
+    c_br = br.chisquare(blocksize=1)
+    c_lr = lr.chisquare(blocksize=1)
+    c_nr = nr.chisquare(blocksize=1)
 
     assert c_br[0] < 2.0
     assert c_br[0] < c_r[0]
@@ -166,7 +166,7 @@ def test_bitbyte():
     assert a.data == "ABCD"
     assert a.data_bits == blob.utils.to_bitstr("ABCD")
     assert a.data == "ABCD"
-    assert a.size_bytes == 4
+    assert a.size == 4
     assert a.size_bits == 32
 
     a = blob.Blob(data_bits=blob.utils.to_bitstr("ABCD"))
@@ -174,7 +174,7 @@ def test_bitbyte():
     assert a.data == "ABCD"
     assert a.data_bits == blob.utils.to_bitstr("ABCD")
     assert a.data == "ABCD"
-    assert a.size_bytes == 4
+    assert a.size == 4
     assert a.size_bits == 32
 
 def test_getitem():

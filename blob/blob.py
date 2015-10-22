@@ -188,7 +188,7 @@ class Blob(object):
                 return Blob(data_bits=self.data_bits[rr])
 
     def _rol_bytes(self, n):
-        n = n % self.size_bytes
+        n = n % self.size
         return self[n:] + self[:n]
 
     def _rol_bits(self, n):
@@ -249,7 +249,7 @@ class Blob(object):
         return self.size_bits % 8 == 0
 
     @property
-    def size_bytes(self):
+    def size(self):
         '''
         The number of bytes in the Blob.
 
@@ -297,7 +297,7 @@ class Blob(object):
 
         return [ f for f in sorted(nonprime_factors) if self.size_bits/f >= min_blocks ]
 
-    def blocksize_bytes_candidates(self, min_blocks=None, min_blocksize=None):
+    def blocksize_candidates(self, min_blocks=None, min_blocksize=None):
         '''
         Returns possibilities for a "block size", in bytes. The possibilities are
         integers which divide evenly into the size of the Blob.
@@ -337,7 +337,7 @@ class Blob(object):
             if split_bits_size % 8 != 0:
                 newblocks = [ Blob(data_bits=self.data_bits[i:i+split_bits_size]) for i in range(0, self.size_bits, split_bits_size) ]
             else:
-                newblocks = [ Blob(data=self.data[i:i+split_bits_size/8]) for i in range(0, self.size_bytes, split_bits_size/8) ]
+                newblocks = [ Blob(data=self.data[i:i+split_bits_size/8]) for i in range(0, self.size, split_bits_size/8) ]
 
         return newblocks
 
@@ -433,11 +433,11 @@ class Blob(object):
         '''
 
         s = struct.Struct(fmt) if s is None else s
-        if self.size_bytes % s.size != 0:
+        if self.size % s.size != 0:
             raise BlobError("format size does not evenly divide blob size")
 
         if not repeat:
-            if s.size != self.size_bytes:
+            if s.size != self.size:
                 raise BlobError("size of non-repeating format is not equal to the blob size")
             return s.unpack(self.data)
         else:
@@ -450,11 +450,11 @@ class Blob(object):
     # Statistical stuff
     #
 
-    def entropy(self, blocksize_bytes=None, blocksize_bits=None, base=2, **split_kwargs):
+    def entropy(self, blocksize=None, blocksize_bits=None, base=2, **split_kwargs):
         '''
         Calculate the entropy of the data.
 
-        @param blocksize_bytes: use this blocksize (in bytes) for splitting
+        @param blocksize: use this blocksize (in bytes) for splitting
                                 data for the probability calculation.
         @param blocksize_bits: use this blocksize (in bits) for splitting
                                 data for the probability calculation.
@@ -464,7 +464,7 @@ class Blob(object):
 
         @param base: an alternate base for the entropy
         '''
-        elements = self.split(bytesize=blocksize_bytes, bitsize=blocksize_bits, **split_kwargs)
+        elements = self.split(bytesize=blocksize, bitsize=blocksize_bits, **split_kwargs)
         counts = collections.Counter(elements)
 
         if _scipy_fail:
@@ -472,11 +472,11 @@ class Blob(object):
 
         return float(scipy.stats.entropy(counts.values(), base=base))
 
-    def chisquare(self, blocksize_bytes=None, blocksize_bits=None, f_exp=None, **split_kwargs):
+    def chisquare(self, blocksize=None, blocksize_bits=None, f_exp=None, **split_kwargs):
         '''
         Perform the chi-squared test on the data.
 
-        @param blocksize_bytes: use this blocksize (in bytes) for splitting
+        @param blocksize: use this blocksize (in bytes) for splitting
                                 data for the probability calculation.
         @param blocksize_bits: use this blocksize (in bits) for splitting
                                 data for the probability calculation.
@@ -488,7 +488,7 @@ class Blob(object):
 
         @param base: an alternate base for the entropy
         '''
-        elements = self.split(bytesize=blocksize_bytes, bitsize=blocksize_bits, **split_kwargs)
+        elements = self.split(bytesize=blocksize, bitsize=blocksize_bits, **split_kwargs)
         counts = collections.Counter(elements)
 
         if _scipy_fail:
