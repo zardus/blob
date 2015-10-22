@@ -3,6 +3,7 @@ import struct
 import operator
 import functools
 import itertools
+import collections
 
 try:
     import scipy.stats
@@ -15,8 +16,6 @@ try:
     _mp_fail = False
 except ImportError:
     _mp_fail = True
-
-import collections
 
 def _blobify(o):
     if isinstance(o, Blob):
