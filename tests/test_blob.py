@@ -149,7 +149,7 @@ def test_chisquare():
     c_lr = lr.chisquare(blocksize=1)
     c_nr = nr.chisquare(blocksize=1)
 
-    assert c_br[0] < 2.0
+    assert c_br[0] < 3.0
     assert c_br[0] < c_r[0]
     assert c_br[0] < c_lr[0]
     assert c_r[0] < c_lr[0]
