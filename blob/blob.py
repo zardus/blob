@@ -64,7 +64,7 @@ class Blob(object):
             self.data_bits = data_bits
         elif filename is not None:
             if dirname is None: dirname = '.'
-            self.data = open(os.path.join(dirname, filename), 'r')
+            self.data = open(os.path.join(dirname, filename), 'r').read()
         self.blocksize_bits = None
 
     #
