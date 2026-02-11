@@ -20,10 +20,12 @@ except ImportError:
 def _blobify(o):
     if isinstance(o, Blob):
         return o
-    elif isinstance(o, str):
+    elif isinstance(o, bytes):
         return Blob(o)
+    elif isinstance(o, str):
+        return Blob(o.encode('latin-1'))
     else:
-        raise BlobError("can't blobify type %s", type(o))
+        raise BlobError("can't blobify type %s" % type(o))
 
 def _fix_other_type(f):
     @functools.wraps(f)
@@ -46,7 +48,7 @@ class Blob(object):
         Initializes a Blob object. Blobs can be created from different types of
         data:
 
-            @param data: a string containing the data
+            @param data: a bytes object containing the data
             @param data_bits: a string of bits (as '1' and '0' chars)
                               representing the data
             @param filename: the name of a file to read the data from
@@ -59,12 +61,15 @@ class Blob(object):
         self._data_bytes = None
 
         if data is not None:
+            if isinstance(data, str):
+                data = data.encode('latin-1')
             self.data = data
         elif data_bits is not None:
             self.data_bits = data_bits
         elif filename is not None:
             if dirname is None: dirname = '.'
-            self.data = open(os.path.join(dirname, filename), 'r').read()
+            with open(os.path.join(dirname, filename), 'rb') as f:
+                self.data = f.read()
         self.blocksize_bits = None
 
     #
@@ -76,7 +81,7 @@ class Blob(object):
         '''
         The data of the Blob, in bytes.
 
-        @returns a string, representing the data
+        @returns a bytes object, representing the data
         '''
 
         if self._data_bytes is None:
@@ -85,6 +90,8 @@ class Blob(object):
 
     @data.setter
     def data(self, d):
+        if isinstance(d, str):
+            d = d.encode('latin-1')
         self._data_bytes = d
         self._data_bits = None
 
@@ -147,14 +154,18 @@ class Blob(object):
     def __getitem__(self, r):
         if isinstance(r, int):
             if self._data_bytes is not None:
-                return Blob(data=self.data[r])
+                if r < 0:
+                    r += len(self.data)
+                if r < 0 or r >= len(self.data):
+                    raise IndexError('Blob index out of range')
+                return Blob(data=self.data[r:r+1])
             else:
                 return Blob(data_bits=self._data_bits[r*8:r*8+8])
         elif isinstance(r, float):
             r = int(r)
 
             if self._data_bytes is not None and r % 8 == 0:
-                return Blob(data=self.data[r/8])
+                return Blob(data=self.data[r//8:r//8+1])
             else:
                 return Blob(data_bits=self.data_bits[r])
         elif isinstance(r, slice):
@@ -179,9 +190,9 @@ class Blob(object):
 
             if byte_aligned and self._data_bytes is not None:
                 rr = slice(
-                    start/8 if start is not None else None,
-                    stop/8 if stop is not None else None,
-                    step/8 if step is not None else None
+                    start//8 if start is not None else None,
+                    stop//8 if stop is not None else None,
+                    step//8 if step is not None else None
                 )
                 return Blob(data=self.data[rr])
             else:
@@ -195,7 +206,7 @@ class Blob(object):
     def _rol_bits(self, n):
         n = n % self.size_bits
         if n % 8 == 0 and self.byte_aligned:
-            return self._rol_bytes(n/8)
+            return self._rol_bytes(n//8)
 
         return self[float(n):] + self[:float(n)]
 
@@ -219,11 +230,13 @@ class Blob(object):
         Returns a left-justified Blob.
 
         @param n: the size to justify to. Float for bits, int for bytes.
-        @param what: the char to justify with. The default is ' ' for bytes
+        @param what: the char to justify with. The default is b' ' for bytes
                      and '0' for bits.
         '''
         if type(n) is int:
-            what = ' ' if what is None else what
+            what = b' ' if what is None else what
+            if isinstance(what, str):
+                what = what.encode('latin-1')
             return Blob(data=self.data.ljust(n, what))
         elif type(n) is float:
             what = '0' if what is None else what
@@ -236,11 +249,13 @@ class Blob(object):
         Returns a right-justified Blob.
 
         @param n: the size to justify to. Float for bits, int for bytes.
-        @param what: the char to justify with. The default is ' ' for bytes
+        @param what: the char to justify with. The default is b' ' for bytes
                      and '0' for bits.
         '''
         if type(n) is int:
-            what = ' ' if what is None else what
+            what = b' ' if what is None else what
+            if isinstance(what, str):
+                what = what.encode('latin-1')
             return Blob(data=self.data.rjust(n, what))
         elif type(n) is float:
             what = '0' if what is None else what
@@ -303,11 +318,11 @@ class Blob(object):
         for i in range(1, len(prime_factors)):
             combinations = set(itertools.combinations(prime_factors, i))
             for c in combinations:
-                npf = reduce(operator.__mul__, c, 1)
+                npf = functools.reduce(operator.__mul__, c, 1)
                 if npf >= min_blocksize:
                     nonprime_factors.add(npf)
 
-        return [ f for f in sorted(nonprime_factors) if self.size_bits/f >= min_blocks ]
+        return [ f for f in sorted(nonprime_factors) if self.size_bits // f >= min_blocks ]
 
     def blocksize_candidates(self, min_blocks=None, min_blocksize=None):
         '''
@@ -318,7 +333,7 @@ class Blob(object):
         '''
         min_blocksize = 8 if min_blocksize is None else min_blocksize * 8
         bit_candidates = self.blocksize_bits_candidates(min_blocks=min_blocks, min_blocksize=min_blocksize)
-        return [ f/8 for f in bit_candidates if f%8 == 0]
+        return [ f//8 for f in bit_candidates if f%8 == 0]
 
     def split(self, sep=None, sep_bits=None, maxsplit=None, size=None, size_bits=None, n=None, allow_empty=False):
         '''
@@ -338,21 +353,24 @@ class Blob(object):
         '''
 
         if sep is not None:
+            if isinstance(sep, str):
+                sep = sep.encode('latin-1')
             split_args = [ sep ] if maxsplit is None else [ sep, maxsplit ]
-            newblocks = [ Blob(data=d) for d in self.data.split(*split_args) if allow_empty or d != '' ]
+            newblocks = [ Blob(data=d) for d in self.data.split(*split_args) if allow_empty or d != b'' ]
         elif sep_bits is not None:
             split_args = [ sep_bits ] if maxsplit is None else [ sep_bits, maxsplit ]
             newblocks = [ Blob(data_bits=d) for d in self.data_bits.split(*split_args) if allow_empty or d != '' ]
         else:
             if n is not None:
-                split_bits_size = self.size_bits/n
+                split_bits_size = self.size_bits // n
             else:
                 split_bits_size = self._get_bit_index(byte=size, bit=size_bits)
 
             if split_bits_size % 8 != 0:
                 newblocks = [ Blob(data_bits=self.data_bits[i:i+split_bits_size]) for i in range(0, self.size_bits, split_bits_size) ]
             else:
-                newblocks = [ Blob(data=self.data[i:i+split_bits_size/8]) for i in range(0, self.size, split_bits_size/8) ]
+                split_byte_size = split_bits_size // 8
+                newblocks = [ Blob(data=self.data[i:i+split_byte_size]) for i in range(0, self.size, split_byte_size) ]
 
             if maxsplit is not None:
                 leftsize = sum(b.size_bits for b in newblocks[:maxsplit])
@@ -387,14 +405,16 @@ class Blob(object):
         elif byte is not None:
             return byte * 8 if byte > 0 else self.size_bits + byte*8
         elif sep is not None:
-            if not sep in self.data:
+            if isinstance(sep, str):
+                sep = sep.encode('latin-1')
+            if sep not in self.data:
                 raise BlobError("separator not found in blob data")
             elif reverse:
                 return self.data.rindex(sep) * 8
             else:
                 return self.data.index(sep) * 8
         elif sep_bits is not None:
-            if not sep_bits in self.data_bits:
+            if sep_bits not in self.data_bits:
                 raise BlobError("separator not found in blob data")
             elif reverse:
                 return self.data_bits.rindex(sep_bits)
@@ -412,8 +432,8 @@ class Blob(object):
         @param sep_bits: chop everything after a separator of bits (keep the separator)
         '''
         off = self._get_bit_index(byte=offset, bit=offset_bits, sep=sep, sep_bits=sep_bits)
-        if off % 8 != 0: return self[off/8:]
-        else: return self[float(off):]
+        if off % 8 != 0: return self[float(off):]
+        else: return self[off//8:]
 
     def truncate(self, offset=None, offset_bits=None, sep=None, sep_bits=None):
         '''
@@ -427,8 +447,8 @@ class Blob(object):
                        separator)
         '''
         off = self._get_bit_index(byte=offset, bit=offset_bits, sep=sep, sep_bits=sep_bits, reverse=True)
-        if off % 8 != 0: return self[:off/8]
-        else: return self[:float(off)]
+        if off % 8 != 0: return self[:float(off)]
+        else: return self[:off//8]
 
     #
     # data converters
@@ -485,7 +505,7 @@ class Blob(object):
         if _scipy_fail:
             raise BlobError("please install the scipy to use statistical analyses!")
 
-        return float(scipy.stats.entropy(counts.values(), base=base))
+        return float(scipy.stats.entropy(list(counts.values()), base=base))
 
     def chisquare(self, blocksize=None, blocksize_bits=None, f_exp=None, **split_kwargs):
         '''
@@ -509,7 +529,8 @@ class Blob(object):
         if _scipy_fail:
             raise BlobError("please install the scipy to use statistical analyses!")
 
-        return map(float, scipy.stats.chisquare(counts.values(), f_exp=f_exp))
+        result = scipy.stats.chisquare(list(counts.values()), f_exp=f_exp)
+        return [float(result.statistic), float(result.pvalue)]
 
     #
     # Some other weird operations
@@ -528,7 +549,7 @@ class Blob(object):
         other = self if other is None else _blobify(other)
         step_bits = 8 if step_bits is None else step_bits
 
-        for i in range(other.size_bits/step_bits):
+        for i in range(other.size_bits // step_bits):
             if step_bits == 8:
                 yield self ^ other._rol_bytes(i)
             else:
