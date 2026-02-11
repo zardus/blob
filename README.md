@@ -35,17 +35,17 @@ assert a.data_bits == '01000001010000100100001101000100'
 assert b.data == b'ABCD'
 
 # use integers to access bytes and floats to access bits
-assert b[1] == b'B'
+assert b[1].data == b'B'
 assert a[1.].data_bits == '1'
-assert b[1:-1] == b'BC'
-assert a[8.:-8.] == b'BC'
+assert b[1:-1].data == b'BC'
+assert a[8.:-8.].data == b'BC'
 
 # blobs provide lots of useful operations
 print(a.size, "divides cleanly into", a.blocksize_candidates())
 print(a.size_bits, "divides cleanly into", a.blocksize_bits_candidates())
 print("The second half of a is:", a.offset(2))
 print("Letters of A are:", a.split(size=1))
-print("Split on the 'B':", a.split(sep='B'))
+print("Split on the 'B':", a.split(sep=b'B'))
 
 # and bitwise ops!
 assert a | b'\x20\x20\x20\x20' == b'abcd'
@@ -76,9 +76,9 @@ from blob import Blob
 
 b = Blob(data=b"AB")  # 01000001 01000010
 
-assert b[0] == b"A"            # byte 0
-assert b[1] == b"B"            # byte 1
-assert b[8.] == b"B"           # bit index 8 is byte boundary -> one byte
+assert b[0].data == b"A"       # byte 0 (indexing returns a Blob)
+assert b[1].data == b"B"       # byte 1
+assert b[8.].data == b"B"      # bit index 8 is byte boundary -> one byte
 assert b[1.].data_bits == "1"  # single bit as a 1-bit blob
 ```
 
@@ -88,11 +88,11 @@ assert b[1.].data_bits == "1"  # single bit as a 1-bit blob
 from blob import Blob
 
 b = Blob(data=b"ABCDEFGHIJ")
-assert b[2:6] == b"CDEF"       # byte slice
-assert b[::2] == b"ACEGI"      # byte stride
+assert b[2:6].data == b"CDEF"  # byte slice
+assert b[::2].data == b"ACEGI" # byte stride
 
 bits = Blob(data=b"ABCD")
-assert bits[8.:24.] == b"BC"   # bit slice aligned to bytes
+assert bits[8.:24.].data == b"BC"   # bit slice aligned to bytes
 assert bits[1.:9.].data == b"\x82"  # unaligned bit slice
 ```
 
@@ -103,12 +103,12 @@ from blob import Blob
 
 b = Blob(data=b"AAAABBBBCCCC")
 
-assert b.split(size=4) == [b"AAAA", b"BBBB", b"CCCC"]
-assert b.split(n=3) == [b"AAAA", b"BBBB", b"CCCC"]
-assert b.split(size_bits=16) == [b"AA", b"AA", b"BB", b"BB", b"CC", b"CC"]
+assert [x.data for x in b.split(size=4)] == [b"AAAA", b"BBBB", b"CCCC"]
+assert [x.data for x in b.split(n=3)] == [b"AAAA", b"BBBB", b"CCCC"]
+assert [x.data for x in b.split(size_bits=16)] == [b"AA", b"AA", b"BB", b"BB", b"CC", b"CC"]
 
-assert b.split(sep=b"B") == [b"AAAA", b"CCCC"]
-assert b.split(sep_bits="01000010") == [b"AAAA", b"CCCC"]  # split on byte 'B' as bits
+assert [x.data for x in b.split(sep=b"B")] == [b"AAAA", b"CCCC"]
+assert [x.data for x in b.split(sep_bits="01000010")] == [b"AAAA", b"CCCC"]  # split on byte 'B' as bits
 ```
 
 ### Block size analysis
