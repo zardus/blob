@@ -9,6 +9,7 @@ I wrote it to save Shellphish some time with crypto and forensics challenges.
 Blob provides a `Blob` class that lets you:
 
 - flip between byte and bit views without manually converting
+- pass either `str` or `bytes` as byte-oriented inputs (`str` is latin-1 encoded automatically)
 - index/slice by bytes (`int`) or bits (`float`)
 - split by size, count, or separator (both byte and bit separators)
 - test likely block sizes for crypto-ish data
@@ -25,8 +26,8 @@ It is intentionally small, direct, and useful in CTF workflows.
 ```python
 import blob
 
-# blobs can be created from byte or bit data
-a = blob.Blob(data=b'ABCD')
+# blobs can be created from bytes, strings, or bit data
+a = blob.Blob(data='ABCD')  # strings are latin-1 encoded
 b = blob.Blob(data_bits='01000001010000100100001101000100')
 assert a == b
 
@@ -45,7 +46,7 @@ print(a.size, "divides cleanly into", a.blocksize_candidates())
 print(a.size_bits, "divides cleanly into", a.blocksize_bits_candidates())
 print("The second half of a is:", a.offset(2))
 print("Letters of A are:", a.split(size=1))
-print("Split on the 'B':", a.split(sep=b'B'))
+print("Split on the 'B':", a.split(sep='B'))
 
 # and bitwise ops!
 assert a | b'\x20\x20\x20\x20' == b'abcd'
@@ -74,7 +75,7 @@ assert b3.data == b"hello"
 ```python
 from blob import Blob
 
-b = Blob(data=b"AB")  # 01000001 01000010
+b = Blob(data="AB")  # 01000001 01000010
 
 assert b[0].data == b"A"       # byte 0 (indexing returns a Blob)
 assert b[1].data == b"B"       # byte 1
@@ -87,11 +88,11 @@ assert b[1.].data_bits == "1"  # single bit as a 1-bit blob
 ```python
 from blob import Blob
 
-b = Blob(data=b"ABCDEFGHIJ")
+b = Blob(data="ABCDEFGHIJ")
 assert b[2:6].data == b"CDEF"  # byte slice
 assert b[::2].data == b"ACEGI" # byte stride
 
-bits = Blob(data=b"ABCD")
+bits = Blob(data="ABCD")
 assert bits[8.:24.].data == b"BC"   # bit slice aligned to bytes
 assert bits[1.:9.].data == b"\x82"  # unaligned bit slice
 ```
@@ -101,13 +102,14 @@ assert bits[1.:9.].data == b"\x82"  # unaligned bit slice
 ```python
 from blob import Blob
 
-b = Blob(data=b"AAAABBBBCCCC")
+b = Blob(data="AAAABBBBCCCC")
 
 assert [x.data for x in b.split(size=4)] == [b"AAAA", b"BBBB", b"CCCC"]
 assert [x.data for x in b.split(n=3)] == [b"AAAA", b"BBBB", b"CCCC"]
 assert [x.data for x in b.split(size_bits=16)] == [b"AA", b"AA", b"BB", b"BB", b"CC", b"CC"]
 
-assert [x.data for x in b.split(sep=b"B")] == [b"AAAA", b"CCCC"]
+assert [x.data for x in b.split(sep="B")] == [b"AAAA", b"CCCC"]   # str separator
+assert [x.data for x in b.split(sep=b"B")] == [b"AAAA", b"CCCC"]  # bytes separator
 assert [x.data for x in b.split(sep_bits="01000010")] == [b"AAAA", b"CCCC"]  # split on byte 'B' as bits
 ```
 
@@ -126,7 +128,7 @@ print(b.blocksize_bits_candidates())   # [1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48]
 ```python
 from blob import Blob
 
-a = Blob(data=b"ABCD")
+a = Blob(data="ABCD")
 mask = Blob(data=b"\x20")
 
 assert (a ^ mask).data == b"abcd"
@@ -192,7 +194,7 @@ assert Blob(data=b"\x41\x42\x43\x44").unpack(">I", repeat=False) == (0x41424344,
 ```python
 from blob import Blob
 
-data = Blob(data=b"XYZXYZXYZXYZ")
+data = Blob(data="XYZXYZXYZXYZ")
 
 # candidate period sizes that tile the blob
 print(data.blocksize_candidates())  # includes 3 here
@@ -211,16 +213,16 @@ assert duplicate_blocks == 1
 ```python
 from blob import Blob
 
-b = Blob(data=b"AAAABBBBCCCC")
+b = Blob(data="AAAABBBBCCCC")
 
 assert b.offset(offset=4) == b"BBBBCCCC"           # drop first 4 bytes
 assert b.offset(offset_bits=32) == b"BBBBCCCC"     # same thing in bits
-assert b.offset(sep=b"C") == b"CCCC"               # jump to first separator
+assert b.offset(sep="C") == b"CCCC"                # jump to first separator (str sep)
 assert b.offset(sep_bits="01000010") == b"BBBBCCCC"
 
 assert b.truncate(offset=4) == b"AAAA"             # keep first 4 bytes
 assert b.truncate(offset_bits=16) == b"AA"
-assert Blob(data=b"ABCD").truncate(sep=b"C") == b"AB"
+assert Blob(data="ABCD").truncate(sep=b"C") == b"AB"  # bytes sep
 ```
 
 ### MulPyPlexer integration (operate on many blobs at once)
