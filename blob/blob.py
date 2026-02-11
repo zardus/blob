@@ -154,7 +154,11 @@ class Blob(object):
     def __getitem__(self, r):
         if isinstance(r, int):
             if self._data_bytes is not None:
-                return Blob(data=self.data[r:r+1] if r != -1 else self.data[r:])
+                if r < 0:
+                    r += len(self.data)
+                if r < 0 or r >= len(self.data):
+                    raise IndexError('Blob index out of range')
+                return Blob(data=self.data[r:r+1])
             else:
                 return Blob(data_bits=self._data_bits[r*8:r*8+8])
         elif isinstance(r, float):

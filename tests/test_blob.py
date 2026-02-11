@@ -2,6 +2,7 @@ import pytest
 import random
 
 import blob
+import blob.blob as bb
 
 
 # --- Construction ---
@@ -332,12 +333,11 @@ class TestMpSplit:
         assert omg_mp == [blob.Blob(data=d) for d in (b'A', b'A', b'A', b'B', b'B', b'B', b'C', b'C', b'C')]
 
     def test_mp_split_unavailable(self):
-        import blob.blob as bb
         orig = bb._mp_fail
         bb._mp_fail = True
         try:
             b = blob.Blob(data=b"ABCD")
-            with pytest.raises(blob.blob.BlobError):
+            with pytest.raises(bb.BlobError):
                 b.mp_split(size=2)
         finally:
             bb._mp_fail = orig
@@ -420,7 +420,7 @@ class TestUnpack:
 
     def test_unpack_bad_size(self):
         b = blob.Blob(data=b"ABC")
-        with pytest.raises(blob.blob.BlobError):
+        with pytest.raises(bb.BlobError):
             b.unpack('>I')
 
     def test_unpack_single(self):
@@ -430,7 +430,7 @@ class TestUnpack:
 
     def test_unpack_single_bad_size(self):
         b = blob.Blob(data=b"AABBBBCC")
-        with pytest.raises(blob.blob.BlobError):
+        with pytest.raises(bb.BlobError):
             b.unpack('>I', repeat=False)
 
 
@@ -535,12 +535,11 @@ class TestEntropy:
         assert round(e.entropy(blocksize=1), 5) == 8.0
 
     def test_entropy_no_scipy(self):
-        import blob.blob as bb
         orig = bb._scipy_fail
         bb._scipy_fail = True
         try:
             b = blob.Blob(data=b"AABB")
-            with pytest.raises(blob.blob.BlobError):
+            with pytest.raises(bb.BlobError):
                 b.entropy(blocksize=1)
         finally:
             bb._scipy_fail = orig
@@ -667,18 +666,17 @@ class TestJust:
 
 class TestEdgeCases:
     def test_blobify_invalid(self):
-        from blob.blob import _blobify, BlobError
-        with pytest.raises(BlobError):
-            _blobify(12345)
+        with pytest.raises(bb.BlobError):
+            bb._blobify(12345)
 
     def test_separator_not_found(self):
         b = blob.Blob(data=b"ABCD")
-        with pytest.raises(blob.blob.BlobError):
+        with pytest.raises(bb.BlobError):
             b.offset(sep=b"Z")
 
     def test_separator_bits_not_found(self):
         b = blob.Blob(data=b"ABCD")
-        with pytest.raises(blob.blob.BlobError):
+        with pytest.raises(bb.BlobError):
             b.offset(sep_bits="11111111111111111")
 
     def test_all_zero_bytes(self):

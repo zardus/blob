@@ -938,8 +938,8 @@ def mainloop(n, u, p1):
          tmp = multiply(p1, i, n)
          if not isinstance(tmp, list):
             return tmp
-         for i in range(len(tmp)):
-            tmp[i] = tmp[i][0]
+         for j in range(len(tmp)):
+            tmp[j] = tmp[j][0]
          small_multiples.append(tuple(tmp))
       else:
          small_multiples.append(None)
